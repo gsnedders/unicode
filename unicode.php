@@ -57,17 +57,17 @@ class Unicode
 					{
 						$character = $value;
 					}
-					elseif ($value & 0xC0)
+					elseif ($value & 0xC0 && $value ^ 0x20)
 					{
 						$character = ($value & 0x1F) << 6;
 						$remaining = 1;
 					}
-					elseif ($value & 0xE0)
+					elseif ($value & 0xE0 && $value ^ 0x01)
 					{
 						$character = ($value & 0x0F) << 12;
 						$remaining = 2;
 					}
-					elseif ($value & 0xF0)
+					elseif ($value & 0xF0 && $value ^ 0x08)
 					{
 						$character = ($value & 0x07) << 18;
 						$remaining = 3;
@@ -79,7 +79,7 @@ class Unicode
 				}
 				else
 				{
-					if ($value & 0x80)
+					if ($value & 0x80 && $value ^ 0x04)
 					{
 						$remaining--;
 						$character |= ($value & 0x3F) << ($remaining * 6);
