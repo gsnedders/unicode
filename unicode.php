@@ -67,7 +67,7 @@ class Unicode
 						$character = ($value & 0x0F) << 12;
 						$remaining = 2;
 					}
-					elseif ($value & 0xF0 && $value ^ 0x08)
+					elseif ($value & 0xF0 && $value & 0x04 <= 0x04 && $value ^ 0x08)
 					{
 						$character = ($value & 0x07) << 18;
 						$remaining = 3;
