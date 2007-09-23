@@ -53,7 +53,7 @@ class Unicode
 				
 				if (!$remaining)
 				{
-					if ($value <= 0x7F)
+					if ($value ^ 0x80)
 					{
 						$character = $value;
 					}
