@@ -126,4 +126,20 @@ class Unicode
 		}
 		return $unicode;
 	}
+	
+	public function to_utf8()
+	{
+		if (version_compare(phpversion(), '6', '>=') && is_unicode($this->data))
+		{
+			return unicode_encode($this->data, 'UTF-8');
+		}
+		elseif (extension_loaded('mbstring') && ($return = @mb_convert_encoding($string, 'UTF-8', 'UTF-32BE')))
+		{
+			return $return;
+		}
+		elseif (extension_loaded('iconv') && ($return = @iconv('UTF-32BE', 'UTF-8', $string)))
+		{
+			return $return;
+		}
+	}
 }
