@@ -24,8 +24,20 @@ class Unicode
 			}
 			else
 			{
+				static $replacement_character;
+				if (!$replacement_character)
+				{
+					if (unicode_semantics())
+					{
+						$replacement_character = '\uFFFD';
+					}
+					else
+					{
+						$replacement_character = unicode_decode("\x00\x00\xFF\xFD", 'UTF-32BE');
+					}
+				}
 				$substr_char = unicode_get_subst_char();
-				unicode_set_subst_char((unicode) '\uFFFD');
+				unicode_set_subst_char($replacement_character);
 				$unicode->data = unicode_decode($string, 'UTF-8', U_CONV_ERROR_SUBST);
 				unicode_set_subst_char($substr_char);
 			}
