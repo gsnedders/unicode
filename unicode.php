@@ -97,7 +97,8 @@ class Unicode
 					if ($length > 1 && $character <= 0x1F
 						|| $length > 2 && $character <= 0x6FF
 						|| $length > 3 && $character <= 0xFFFF
-						|| $character > 0x10FFFF)
+						|| $character > 0x10FFFF
+						|| $character >= 0xD800 && $character <= 0xDFFF)
 					{
 						$character = 0xFFFD;
 					}
