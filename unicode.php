@@ -43,9 +43,6 @@ class Unicode
 			$unicode->type = Unicode::utf32be_string;
 			$unicode->data = '';
 			
-			$character = array();
-			$remaining = 0;
-			
 			$len = strlen($string);
 			for ($i = 0; $i < $len; $i++)
 			{
@@ -56,27 +53,29 @@ class Unicode
 					if ($value ^ 0x80)
 					{
 						$character = $value;
+						$length = 1;
 					}
-					elseif ($value & 0xC0 && $value & 0x1E && $value ^ 0x20)
+					elseif ($value & 0xC0 && $value ^ 0x20)
 					{
 						$character = ($value & 0x1F) << 6;
-						$remaining = 1;
+						$length = 2;
 					}
 					elseif ($value & 0xE0 && $value ^ 0x01)
 					{
 						$character = ($value & 0x0F) << 12;
-						$remaining = 2;
+						$length = 3;
 					}
-					// can still exceed 10FFFF!!!
-					elseif ($value & 0xF0 && $value & 0x04 <= 0x04 && $value ^ 0x08)
+					elseif ($value & 0xF0 && $value ^ 0x08)
 					{
 						$character = ($value & 0x07) << 18;
-						$remaining = 3;
+						$length = 4;
 					}
 					else
 					{
 						$character = 0xFFFD;
+						$length = 3;
 					}
+					$remaining = $length - 1;
 				}
 				else
 				{
@@ -87,7 +86,31 @@ class Unicode
 					}
 					else
 					{
-						$remaining = 0;
 						$character = 0xFFFD;
+						$remaining = 0;
+						$length = 3;
 					}
 				}
+				
+				if (!$remaining)
+				{
+					if ($length > 1 && $character <= 0x1F
+						|| $length > 2 && $character <= 0x6FF
+						|| $length > 3 && $character <= 0xFFFF
+						|| $character > 0x10FFFF)
+					{
+						$character = 0xFFFD;
+					}
+					
+					$unicode->data .= pack('N', $character);
+				}
+			}
+			
+			if (!empty($remaining))
+			{
+				$unicode->data .= "\x00\x00\xFF\xFD";
+			}
+		}
+		return $unicode;
+	}
+}
