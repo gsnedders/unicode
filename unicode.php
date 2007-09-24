@@ -15,7 +15,8 @@ class Unicode
 	{
 		$unicode = new Unicode;
 		
-		if (version_compare(phpversion(), '6', '>='))
+		//if (version_compare(phpversion(), '6', '>='))
+		if (false)
 		{
 			$unicode->type = Unicode::unicode_string;
 			if (is_unicode($string))
@@ -42,11 +43,13 @@ class Unicode
 				unicode_set_subst_char($substr_char);
 			}
 		}
-		elseif (extension_loaded('mbstring') && ($unicode->data = @mb_convert_encoding($string, 'UTF-32BE', 'UTF-8')))
+		//elseif (extension_loaded('mbstring') && ($unicode->data = @mb_convert_encoding($string, 'UTF-32BE', 'UTF-8')))
+		elseif(false)
 		{
 			$unicode->type = Unicode::utf32be_string;
 		}
-		elseif (extension_loaded('iconv') && ($unicode->data = @iconv('UTF-8', 'UTF-32BE', $string)))
+		//elseif (extension_loaded('iconv') && ($unicode->data = @iconv('UTF-8', 'UTF-32BE', $string)))
+		elseif(false)
 		{
 			$unicode->type = Unicode::utf32be_string;
 		}
@@ -54,6 +57,7 @@ class Unicode
 		{
 			$unicode->type = Unicode::utf32be_string;
 			$unicode->data = '';
+			$remaining = 0;
 			
 			$len = strlen($string);
 			for ($i = 0; $i < $len; $i++)
@@ -67,45 +71,54 @@ class Unicode
 						$character = $value;
 						$length = 1;
 					}
-					elseif ($value & 0xC0 && $value ^ 0x20)
+					elseif ($value & 0xE0 === 0xC0)
 					{
 						$character = ($value & 0x1F) << 6;
+						//var_dump('magic', $character, $value);
 						$length = 2;
+						$remaining = 1;
 					}
-					elseif ($value & 0xE0 && $value ^ 0x01)
+					elseif ($value & 0xF0 === 0xE0)
 					{
 						$character = ($value & 0x0F) << 12;
 						$length = 3;
+						$remaining = 2;
 					}
-					elseif ($value & 0xF0 && $value ^ 0x08)
+					elseif ($value & 0xF8 === 0xF0)
 					{
 						$character = ($value & 0x07) << 18;
 						$length = 4;
+						$remaining = 3;
 					}
 					else
 					{
 						$character = 0xFFFD;
 						$length = 3;
+						$remaining = 0;
 					}
-					$remaining = $length - 1;
 				}
 				else
 				{
+					//printf("%08b\n", $value);
+					//var_dump($value & 0x80, $value ^ 0x04, $length);
 					if ($value & 0x80 && $value ^ 0x04)
 					{
+						//printf("before: %08b\n", $character);
 						$remaining--;
 						$character |= ($value & 0x3F) << ($remaining * 6);
+						//printf("after:  %08b\n", $character);
 					}
 					else
 					{
 						$character = 0xFFFD;
-						$remaining = 0;
 						$length = 3;
+						$remaining = 0;
 					}
 				}
 				
 				if (!$remaining)
 				{
+					var_dump(dechex($character));
 					if ($length > 1 && $character <= 0x7F
 						|| $length > 2 && $character <= 0x7FF
 						|| $length > 3 && $character <= 0xFFFF
@@ -129,15 +142,16 @@ class Unicode
 	
 	public function to_utf8()
 	{
+		return $this->data;
 		if (version_compare(phpversion(), '6', '>=') && is_unicode($this->data))
 		{
 			return unicode_encode($this->data, 'UTF-8');
 		}
-		elseif (extension_loaded('mbstring') && ($return = @mb_convert_encoding($string, 'UTF-8', 'UTF-32BE')))
+		elseif (extension_loaded('mbstring') && ($return = @mb_convert_encoding($this->data, 'UTF-8', 'UTF-32BE')))
 		{
 			return $return;
 		}
-		elseif (extension_loaded('iconv') && ($return = @iconv('UTF-32BE', 'UTF-8', $string)))
+		elseif (extension_loaded('iconv') && ($return = @iconv('UTF-32BE', 'UTF-8', $this->data)))
 		{
 			return $return;
 		}
