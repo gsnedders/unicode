@@ -106,8 +106,8 @@ class Unicode
 				
 				if (!$remaining)
 				{
-					if ($length > 1 && $character <= 0x1F
-						|| $length > 2 && $character <= 0x6FF
+					if ($length > 1 && $character <= 0x7F
+						|| $length > 2 && $character <= 0x7FF
 						|| $length > 3 && $character <= 0xFFFF
 						|| $character > 0x10FFFF
 						|| $character >= 0xD800 && $character <= 0xDFFF)
