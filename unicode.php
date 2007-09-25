@@ -113,11 +113,16 @@ class Unicode
 				
 				if (!$remaining)
 				{
+					// "Non-shortest form" sequences
 					if ($length > 1 && $character <= 0x7F
 						|| $length > 2 && $character <= 0x7FF
 						|| $length > 3 && $character <= 0xFFFF
+						// Outside of Unicode codespace (the former should never occur, but we better check for it in case of a security hole)
+						|| $character < 0
 						|| $character > 0x10FFFF
+						// UTF-16 Surrogates
 						|| $character >= 0xD800 && $character <= 0xDFFF
+						// Noncharacters
 						|| ($character & 0xFFFE) === 0xFFFE
 						|| $character >= 0xFDD0 && $character <= 0xFDEF)
 					{
