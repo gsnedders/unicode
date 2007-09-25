@@ -66,7 +66,7 @@ class Unicode
 				
 				if (!$remaining)
 				{
-					if (!$value & 0x80)
+					if ($value <= 0x7F)
 					{
 						$character = $value;
 						$length = 1;
@@ -117,7 +117,9 @@ class Unicode
 						|| $length > 2 && $character <= 0x7FF
 						|| $length > 3 && $character <= 0xFFFF
 						|| $character > 0x10FFFF
-						|| $character >= 0xD800 && $character <= 0xDFFF)
+						|| $character >= 0xD800 && $character <= 0xDFFF
+						|| ($character & 0xFFFE) === 0xFFFE
+						|| $character >= 0xFDD0 && $character <= 0xFDEF)
 					{
 						$character = 0xFFFD;
 					}
@@ -136,6 +138,7 @@ class Unicode
 	
 	public function to_utf8()
 	{
+		return $this->data;
 		if (version_compare(phpversion(), '6', '>=') && is_unicode($this->data))
 		{
 			return unicode_encode($this->data, 'UTF-8');
