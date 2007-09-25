@@ -66,25 +66,24 @@ class Unicode
 				
 				if (!$remaining)
 				{
-					if ($value ^ 0x80)
+					if (!$value & 0x80)
 					{
 						$character = $value;
 						$length = 1;
 					}
-					elseif ($value & 0xE0 === 0xC0)
+					elseif (($value & 0xE0) === 0xC0)
 					{
 						$character = ($value & 0x1F) << 6;
-						//var_dump('magic', $character, $value);
 						$length = 2;
 						$remaining = 1;
 					}
-					elseif ($value & 0xF0 === 0xE0)
+					elseif (($value & 0xF0) === 0xE0)
 					{
 						$character = ($value & 0x0F) << 12;
 						$length = 3;
 						$remaining = 2;
 					}
-					elseif ($value & 0xF8 === 0xF0)
+					elseif (($value & 0xF8) === 0xF0)
 					{
 						$character = ($value & 0x07) << 18;
 						$length = 4;
@@ -99,14 +98,10 @@ class Unicode
 				}
 				else
 				{
-					//printf("%08b\n", $value);
-					//var_dump($value & 0x80, $value ^ 0x04, $length);
 					if ($value & 0x80 && $value ^ 0x04)
 					{
-						//printf("before: %08b\n", $character);
 						$remaining--;
 						$character |= ($value & 0x3F) << ($remaining * 6);
-						//printf("after:  %08b\n", $character);
 					}
 					else
 					{
@@ -118,7 +113,6 @@ class Unicode
 				
 				if (!$remaining)
 				{
-					var_dump(dechex($character));
 					if ($length > 1 && $character <= 0x7F
 						|| $length > 2 && $character <= 0x7FF
 						|| $length > 3 && $character <= 0xFFFF
@@ -142,7 +136,6 @@ class Unicode
 	
 	public function to_utf8()
 	{
-		return $this->data;
 		if (version_compare(phpversion(), '6', '>=') && is_unicode($this->data))
 		{
 			return unicode_encode($this->data, 'UTF-8');
