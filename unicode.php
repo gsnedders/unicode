@@ -2,9 +2,6 @@
 
 class Unicode
 {
-	const unicode_string = 1;
-	const utf32be_string = 2;
-	private $type;
 	private $data;
 	
 	private function __construct()
@@ -18,7 +15,6 @@ class Unicode
 		//if (version_compare(phpversion(), '6', '>='))
 		if (false)
 		{
-			$unicode->type = Unicode::unicode_string;
 			if (is_unicode($string))
 			{
 				$unicode->data = $string;
@@ -43,19 +39,8 @@ class Unicode
 				unicode_set_subst_char($substr_char);
 			}
 		}
-		//elseif (extension_loaded('mbstring') && ($unicode->data = @mb_convert_encoding($string, 'UTF-32BE', 'UTF-8')))
-		elseif(false)
-		{
-			$unicode->type = Unicode::utf32be_string;
-		}
-		//elseif (extension_loaded('iconv') && ($unicode->data = @iconv('UTF-8', 'UTF-32BE', $string)))
-		elseif(false)
-		{
-			$unicode->type = Unicode::utf32be_string;
-		}
 		else
 		{
-			$unicode->type = Unicode::utf32be_string;
 			$unicode->data = '';
 			$remaining = 0;
 			
@@ -108,6 +93,8 @@ class Unicode
 						$character = 0xFFFD;
 						$length = 3;
 						$remaining = 0;
+						// Reprocess byte as a start of character
+						$i--;
 					}
 				}
 				
