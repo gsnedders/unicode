@@ -38,6 +38,10 @@ class Unicode
 			$this->data = unicode_decode($this->data, 'UTF-32BE', U_CONV_ERROR_SUBST);
 			unicode_set_subst_char($substr_char);
 		}
+		elseif (($len = strlen($this->data)) % 4)
+		{
+			$this->data = substr($this->data, 0, floor($len / 4)) . "\x00\x00\xFF\xFD";
+		}
 	}
 	
 	public static function from_utf8($string)
