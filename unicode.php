@@ -12,8 +12,7 @@ class Unicode
 	{
 		$unicode = new Unicode;
 		
-		//if (version_compare(phpversion(), '6', '>='))
-		if (false)
+		if (version_compare(phpversion(), '6', '>='))
 		{
 			if (is_unicode($string))
 			{
@@ -26,7 +25,7 @@ class Unicode
 				{
 					if (unicode_semantics())
 					{
-						$replacement_character = '\uFFFD';
+						$replacement_character = "\uFFFD";
 					}
 					else
 					{
@@ -130,7 +129,6 @@ class Unicode
 	
 	public function to_utf8()
 	{
-		return $this->data;
 		if (version_compare(phpversion(), '6', '>=') && is_unicode($this->data))
 		{
 			return unicode_encode($this->data, 'UTF-8');
