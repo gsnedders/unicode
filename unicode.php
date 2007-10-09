@@ -19,7 +19,12 @@ class Unicode
 	
 	public function __wakeup()
 	{
-		if (version_compare(phpversion(), '6', '>=') && is_binary($this->data))
+		if (!is_string($this->data))
+		{
+			trigger_error('Unicode::__wakeup() expects Unicode::$data to be string, ' . get_type($this->data) . ' given', E_USER_WARNING);
+			$this->data = '';
+		}
+		elseif (version_compare(phpversion(), '6', '>=') && is_binary($this->data))
 		{
 			static $replacement_character;
 			if (!$replacement_character)
@@ -46,6 +51,12 @@ class Unicode
 	
 	public static function from_utf8($string)
 	{
+		if (!is_string($string))
+		{
+			trigger_error('Unicode::from_utf8() expects parameter 1 to be string, ' . get_type($string) . ' given', E_USER_WARNING);
+			return false;
+		}
+		
 		$unicode = new Unicode;
 		
 		if (version_compare(phpversion(), '6', '>='))
