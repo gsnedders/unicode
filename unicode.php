@@ -172,6 +172,13 @@ class Unicode
 	 */
 	private static function valid_unicode_codepoint($codepoint)
 	{
+		// Check given parameter is an integer
+		if (!is_int($codepoint))
+		{
+			trigger_error('Unicode::valid_unicode_codepoint() expects parameter 1 to be long, ' . get_type($codepoint) . ' given', E_USER_WARNING);
+			return false;
+		}
+		
 		// Outside of Unicode codespace
 		if ($character < 0
 			|| $character > 0x10FFFF
@@ -197,14 +204,17 @@ class Unicode
 	 */
 	public static function from_utf8($string)
 	{
+		// Check given parameter is a string
 		if (!is_string($string))
 		{
 			trigger_error('Unicode::from_utf8() expects parameter 1 to be string, ' . get_type($string) . ' given', E_USER_WARNING);
 			return false;
 		}
 		
+		// Create new object
 		$unicode = new Unicode;
 		
+		// If we're on PHP6, we'll just get a unicode string and store that
 		if (version_compare(phpversion(), '6', '>='))
 		{
 			if (is_unicode($string))
@@ -216,41 +226,49 @@ class Unicode
 				$this->data = self::call_unicode_func('unicode_decode', $string, 'UTF-8');
 			}
 		}
+		// Otherwise, we need to decode the UTF-8 string
 		else
 		{
+			// Set the data to an empty string, and remaining bytes in the current sequence to zero
 			$unicode->data = '';
 			$remaining = 0;
 			
-			$len = strlen($string);
-			for ($i = 0; $i < $len; $i++)
+			// Recurse through each and every byte
+			for ($i = 0, $len = strlen($string); $i < $len; $i++)
 			{
 				$value = ord($string[$i]);
 				
+				// If we're the first byte of sequence:
 				if (!$remaining)
 				{
+					// One byte sequence:
 					if ($value <= 0x7F)
 					{
 						$character = $value;
 						$length = 1;
 					}
+					// Two byte sequence:
 					elseif (($value & 0xE0) === 0xC0)
 					{
 						$character = ($value & 0x1F) << 6;
 						$length = 2;
 						$remaining = 1;
 					}
+					// Three byte sequence:
 					elseif (($value & 0xF0) === 0xE0)
 					{
 						$character = ($value & 0x0F) << 12;
 						$length = 3;
 						$remaining = 2;
 					}
+					// Four byte sequence:
 					elseif (($value & 0xF8) === 0xF0)
 					{
 						$character = ($value & 0x07) << 18;
 						$length = 4;
 						$remaining = 3;
 					}
+					// Invalid byte:
 					else
 					{
 						$character = 0xFFFD;
@@ -258,30 +276,32 @@ class Unicode
 						$remaining = 0;
 					}
 				}
+				// Continuation byte:
 				else
 				{
+					// Check that the byte is valid, then add it to the character:
 					if (($value & 0xC0) === 0x80)
 					{
 						$remaining--;
 						$character |= ($value & 0x3F) << ($remaining * 6);
 					}
+					// If it is invalid, count the sequence as invalid and reprocess the current byte as the start of a sequence:
 					else
 					{
 						$character = 0xFFFD;
 						$length = 3;
 						$remaining = 0;
-						// Reprocess byte as a start of character
 						$i--;
 					}
 				}
 				
+				// If we've reached the end of the sequence, add it to Unicode::$data
 				if (!$remaining)
 				{
-					// "Non-shortest form" sequences
+					// If the character is illegal replace it with U+FFFD REPLACEMENT CHARACTER
 					if ($length > 1 && $character <= 0x7F
 						|| $length > 2 && $character <= 0x7FF
 						|| $length > 3 && $character <= 0xFFFF
-						// General unicode checks
 						|| !self::valid_unicode_codepoint($character))
 					{
 						$character = 0xFFFD;
@@ -291,12 +311,14 @@ class Unicode
 				}
 			}
 			
+			// Strip any leading BOM (as otherwise we chage the meaing of the new sequence, which is illegal)
 			if (substr($unicode->data, 0, 4) === "\x00\x00\xFE\xFF")
 			{
 				$unicode->data = substr($unicode->data, 4);
 			}
 			
-			if (!empty($remaining))
+			// If we've reached the end of the string but not the end of a character sequence, append a U+FFFD REPLACEMENT CHARACTE
+			if ($remaining > 0)
 			{
 				$unicode->data .= "\x00\x00\xFF\xFD";
 			}
