@@ -38,7 +38,7 @@ class Unicode
 			$this->data = unicode_decode($this->data, 'UTF-32BE', U_CONV_ERROR_SUBST);
 			unicode_set_subst_char($substr_char);
 		}
-		elseif (($len = strlen($this->data)) % 4)
+		elseif (version_compare(phpversion(), '6', '<') && ($len = strlen($this->data)) % 4)
 		{
 			$this->data = substr($this->data, 0, floor($len / 4)) . "\x00\x00\xFF\xFD";
 		}
@@ -118,7 +118,7 @@ class Unicode
 				}
 				else
 				{
-					if ($value & 0x80 && $value ^ 0x04)
+					if (($value & 0xC0) === 0x80)
 					{
 						$remaining--;
 						$character |= ($value & 0x3F) << ($remaining * 6);
