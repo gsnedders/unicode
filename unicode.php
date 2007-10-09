@@ -245,7 +245,7 @@ class Unicode
 						$character = 0xFFFD;
 					}
 					
-					$unicode->data .= pack('N', $character);
+					$unicode->data .= self::codepoint_to_utf32be($character);
 				}
 			}
 			
@@ -372,7 +372,7 @@ class Unicode
 				}
 				else
 				{
-					$unicode->data .= pack('N', $codepoint);
+					$unicode->data .= self::codepoint_to_utf32be($codepoint);
 				}
 			}
 			
@@ -445,9 +445,48 @@ class Unicode
 			$return = '';
 			foreach ($codepoints as $codepoint)
 			{
-				$return .= pack('V', $codepoint);
+				$return .= self::codepoint_to_utf32le($codepoint);
 			}
 			return $return;
+		}
+	}
+	
+	private static function codepoint_to_utf32($codepoint)
+	{
+		return self::codepoint_to_utf32be($codepoint);
+	}
+	
+	private static function codepoint_to_utf32be($codepoint)
+	{
+		if (!is_int($codepoint))
+		{
+			trigger_error('Unicode::codepoint_to_utf32be() expects parameter 1 to be long, ' . get_type($codepoint) . ' given', E_USER_WARNING);
+			return false;
+		}
+		elseif (self::valid_unicode_codepoint($codepoint))
+		{
+			return pack('N', $codepoint);
+		}
+		else
+		{
+			return "\x00\x00\xFF\xFD";
+		}
+	}
+	
+	private static function codepoint_to_utf32le($codepoint)
+	{
+		if (!is_int($codepoint))
+		{
+			trigger_error('Unicode::codepoint_to_utf32le() expects parameter 1 to be long, ' . get_type($codepoint) . ' given', E_USER_WARNING);
+			return false;
+		}
+		elseif (self::valid_unicode_codepoint($codepoint))
+		{
+			return pack('V', $codepoint);
+		}
+		else
+		{
+			return "\xFD\xFF\x00\x00";
 		}
 	}
 }
