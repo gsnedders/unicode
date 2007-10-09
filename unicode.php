@@ -100,6 +100,12 @@ class Unicode
 		}
 	}
 	
+	/**
+	 * Call a function given by the first parameter in our own unicode setup
+	 *
+	 * @see call_user_func()
+	 * @see Unicode::call_unicode_func_array()
+	 */
 	private static function call_unicode_func($function)
 	{
 		$param_arr = func_get_args();
@@ -107,6 +113,13 @@ class Unicode
 		return self::call_unicode_func_array($function, $param_arr);
 	}
 	
+	/**
+	 * Call a function given by the first parameter with an array of parameters
+	 * in our own unicode setup
+	 *
+	 * @see call_user_func_array()
+	 * @see Unicode::call_unicode_func()
+	 */
 	private static function call_unicode_func_array($function, $param_arr)
 	{
 		static $replacement_character;
@@ -298,21 +311,24 @@ class Unicode
 		}
 		elseif (!isset($cache[$codepoint]))
 		{
-			if ($codepoint >= 0x00 && $codepoint <= 0x7F)
+			if (!self::valid_unicode_codepoint($codepoint))
 			{
-				$cache[$codepoint] = chr($codepoint);
-			}
-			elseif ($codepoint <= 0x7FF)
-			{
-				$cache[$codepoint] = chr(0xC0 | ($codepoint >> 6)) . chr(0x80 | ($codepoint & 0x3F));
-			}
-			elseif ($codepoint < 0xD800 || $codepoint > 0xDFFF && $codepoint <= 0xFFFF)
-			{
-				$cache[$codepoint] = chr(0xE0 | ($codepoint >> 12)) . chr(0x80 | (($codepoint >> 6) & 0x3F)) . chr(0x80 | ($codepoint & 0x3F));
-			}
-			elseif ($codepoint <= 0x10FFFF)
-			{
-				$cache[$codepoint] = chr(0xF0 | ($codepoint >> 18)) . chr(0x80 | (($codepoint >> 12) & 0x3F)) . chr(0x80 | (($codepoint >> 6) & 0x3F)) . chr(0x80 | ($codepoint & 0x3F));
+				if ($codepoint <= 0x7F)
+				{
+					$cache[$codepoint] = chr($codepoint);
+				}
+				elseif ($codepoint <= 0x7FF)
+				{
+					$cache[$codepoint] = chr(0xC0 | ($codepoint >> 6)) . chr(0x80 | ($codepoint & 0x3F));
+				}
+				elseif ($codepoint <= 0xFFFF)
+				{
+					$cache[$codepoint] = chr(0xE0 | ($codepoint >> 12)) . chr(0x80 | (($codepoint >> 6) & 0x3F)) . chr(0x80 | ($codepoint & 0x3F));
+				}
+				else
+				{
+					$cache[$codepoint] = chr(0xF0 | ($codepoint >> 18)) . chr(0x80 | (($codepoint >> 12) & 0x3F)) . chr(0x80 | (($codepoint >> 6) & 0x3F)) . chr(0x80 | ($codepoint & 0x3F));
+				}
 			}
 			else
 			{
