@@ -326,22 +326,18 @@ class Unicode
 	 */
 	public function to_utf8()
 	{
-		// If it's internally stored as a unicode string, just use PHP's built-in conversion:
 		if (version_compare(phpversion(), '6', '>=') && is_unicode($this->data))
 		{
 			return self::call_unicode_func('unicode_encode', $this->data, 'UTF-8');
 		}
-		// mbstring is an age-old extension for multi-byte strings:
 		elseif (extension_loaded('mbstring') && ($return = @mb_convert_encoding($this->data, 'UTF-8', 'UTF-32BE')))
 		{
 			return $return;
 		}
-		// iconv is platform dependant, but normally works fine:
 		elseif (extension_loaded('iconv') && ($return = @iconv('UTF-32BE', 'UTF-8', $this->data)))
 		{
 			return $return;
 		}
-		// Just use our own rather simple userland code:
 		else
 		{
 			$codepoints = unpack('N*', $this->data);
