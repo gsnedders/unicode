@@ -134,6 +134,25 @@ class Unicode
 		return $return;
 	}
 	
+	private static function valid_unicode_codepoint($codepoint)
+	{
+		// Outside of Unicode codespace
+		if ($character < 0
+			|| $character > 0x10FFFF
+			// UTF-16 Surrogates
+			|| $character >= 0xD800 && $character <= 0xDFFF
+			// Noncharacters
+			|| ($character & 0xFFFE) === 0xFFFE
+			|| $character >= 0xFDD0 && $character <= 0xFDEF)
+		{
+			return false;
+		}
+		else
+		{
+			return true;
+		}
+	}
+	
 	public static function from_utf8($string)
 	{
 		if (!is_string($string))
@@ -220,14 +239,8 @@ class Unicode
 					if ($length > 1 && $character <= 0x7F
 						|| $length > 2 && $character <= 0x7FF
 						|| $length > 3 && $character <= 0xFFFF
-						// Outside of Unicode codespace (the former should never occur, but we better check for it in case of a security hole)
-						|| $character < 0
-						|| $character > 0x10FFFF
-						// UTF-16 Surrogates
-						|| $character >= 0xD800 && $character <= 0xDFFF
-						// Noncharacters
-						|| ($character & 0xFFFE) === 0xFFFE
-						|| $character >= 0xFDD0 && $character <= 0xFDEF)
+						// General unicode checks
+						|| !self::valid_unicode_codepoint($character))
 					{
 						$character = 0xFFFD;
 					}
@@ -236,7 +249,7 @@ class Unicode
 				}
 			}
 			
-			if (substr($unicode->data, 0, 4) === "\x00\x00\xFE\xF")
+			if (substr($unicode->data, 0, 4) === "\x00\x00\xFE\xFF")
 			{
 				$unicode->data = substr($unicode->data, 4);
 			}
@@ -352,14 +365,8 @@ class Unicode
 			
 			foreach ($codepoints as $codepoint)
 			{
-				// Outside of Unicode codespace (the former should never occur, but we better check for it in case of a security hole)
-				if ($codepoint < 0
-					|| $codepoint > 0x10FFFF
-					// UTF-16 Surrogates
-					|| $codepoint >= 0xD800 && $codepoint <= 0xDFFF
-					// Noncharacters
-					|| ($codepoint & 0xFFFE) === 0xFFFE
-					|| $codepoint >= 0xFDD0 && $codepoint <= 0xFDEF)
+				// Check the codepoint is valid
+				if (!self::valid_unicode_codepoint($codepoint))
 				{
 					$unicode->data .= "\x00\x00\xFF\xFD";
 				}
