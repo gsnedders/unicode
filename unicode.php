@@ -374,12 +374,73 @@ class Unicode
 				$unicode->data .= "\x00\x00\xFF\xFD";
 			}
 			
-			if (substr($unicode->data, 0, 4) === "\x00\x00\xFE\xF")
+			if (substr($unicode->data, 0, 4) === "\x00\x00\xFE\xFF")
 			{
 				$unicode->data = substr($unicode->data, 4);
 			}
 		}
 		
 		return $unicode;
+	}
+	
+	public static function from_utf32be($string)
+	{
+		if ((version_compare(phpversion(), '6', '<') || is_binary($string)) && substr($string, 0, 4) !== "\x00\x00\xFE\xFF")
+		{
+			$string = "\x00\x00\xFE\xFF" . $string;
+		}
+		return self::from_utf32($string);
+	}
+	
+	public static function from_utf32le($string)
+	{
+		if ((version_compare(phpversion(), '6', '<') || is_binary($string)) && substr($string, 0, 4) !== "\xFF\xFE\x00\x00")
+		{
+			$string = "\xFF\xFE\x00\x00" . $string;
+		}
+		return self::from_utf32($string);
+	}
+	
+	public function to_utf32()
+	{
+		return $this->to_utf32be();
+	}
+	
+	public function to_utf32be()
+	{
+		if (version_compare(phpversion(), '6', '>=') && is_unicode($this->data))
+		{
+			return self::call_unicode_func('unicode_encode', $this->data, 'UTF-32BE');
+		}
+		else
+		{
+			return $unicode->data;
+		}
+	}
+	
+	public function to_utf32le()
+	{
+		if (version_compare(phpversion(), '6', '>=') && is_unicode($this->data))
+		{
+			return self::call_unicode_func('unicode_encode', $this->data, 'UTF-32LE');
+		}
+		elseif (extension_loaded('mbstring') && ($return = @mb_convert_encoding($this->data, 'UTF-32LE', 'UTF-32BE')))
+		{
+			return $return;
+		}
+		elseif (extension_loaded('iconv') && ($return = @iconv('UTF-32BE', 'UTF-32LE', $this->data)))
+		{
+			return $return;
+		}
+		else
+		{
+			$codepoints = unpack('N*', $this->data);
+			$return = '';
+			foreach ($codepoints as $codepoint)
+			{
+				$return .= pack('V', $codepoint);
+			}
+			return $return;
+		}
 	}
 }
