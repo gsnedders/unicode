@@ -180,13 +180,13 @@ class Unicode
 		}
 		
 		// Outside of Unicode codespace
-		if ($character < 0
-			|| $character > 0x10FFFF
+		if ($codepoint < 0
+			|| $codepoint > 0x10FFFF
 			// UTF-16 Surrogates
-			|| $character >= 0xD800 && $character <= 0xDFFF
+			|| $codepoint >= 0xD800 && $codepoint <= 0xDFFF
 			// Noncharacters
-			|| ($character & 0xFFFE) === 0xFFFE
-			|| $character >= 0xFDD0 && $character <= 0xFDEF)
+			|| ($codepoint & 0xFFFE) === 0xFFFE
+			|| $codepoint >= 0xFDD0 && $codepoint <= 0xFDEF)
 		{
 			return false;
 		}
