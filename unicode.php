@@ -24,6 +24,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
+ * @todo Ensure proper PHP6 support (mainly through strings being unicode strings by default)
  * @package Unicode
  * @version 0.1-dev
  * @copyright 2007 Geoffrey Sneddon
