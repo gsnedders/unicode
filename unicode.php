@@ -49,6 +49,40 @@ class Unicode
 		}
 	}
 	
+	private function call_unicode_func($function)
+	{
+		$param_arr = func_get_args();
+		unset($param_arr[0]);
+		return $this->call_unicode_func_array($function, $param_arr);
+	}
+	
+	private function call_unicode_func_array($function, $param_arr)
+	{
+		static $replacement_character;
+		if (!$replacement_character)
+		{
+			if (unicode_semantics())
+			{
+				$replacement_character = "\uFFFD";
+			}
+			else
+			{
+				$replacement_character = unicode_decode("\x00\x00\xFF\xFD", 'UTF-32BE');
+			}
+		}
+		$substr_char = unicode_get_subst_char();
+		$from_mode = unicode_get_error_mode(FROM_UNICODE);
+		$to_mode = unicode_get_error_mode(TO_UNICODE);
+		unicode_set_subst_char($replacement_character);
+		unicode_set_error_mode(FROM_UNICODE, U_CONV_ERROR_SUBST);
+		unicode_set_error_mode(TO_UNICODE, U_CONV_ERROR_SUBST);
+		$return = call_user_func_array($function, $param_arr);
+		unicode_set_subst_char($substr_char);
+		unicode_set_error_mode(FROM_UNICODE, $from_mode);
+		unicode_set_error_mode(TO_UNICODE, $to_mode);
+		return $return;
+	}
+	
 	public static function from_utf8($string)
 	{
 		if (!is_string($string))
