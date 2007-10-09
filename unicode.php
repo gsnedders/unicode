@@ -172,13 +172,6 @@ class Unicode
 	 */
 	private static function valid_unicode_codepoint($codepoint)
 	{
-		// Check given parameter is an integer
-		if (!is_int($codepoint))
-		{
-			trigger_error('Unicode::valid_unicode_codepoint() expects parameter 1 to be long, ' . get_type($codepoint) . ' given', E_USER_WARNING);
-			return false;
-		}
-		
 		// Outside of Unicode codespace
 		if ($codepoint < 0
 			|| $codepoint > 0x10FFFF
@@ -376,14 +369,8 @@ class Unicode
 		// Keep a cache of all the codepoints we have already converted (this is actually quicker even with such simple code)
 		static $cache;
 		
-		// Check given parameter is an integer
-		if (!is_int($codepoint))
-		{
-			trigger_error('Unicode::codepoint_to_utf8() expects parameter 1 to be long, ' . get_type($codepoint) . ' given', E_USER_WARNING);
-			return false;
-		}
 		// If we haven't already got it cached, go cache it
-		elseif (!isset($cache[$codepoint]))
+		if (!isset($cache[$codepoint]))
 		{
 			// If the codepoint is invalid, just store it as U+FFFD REPLACEMENT CHARACTER
 			if (!self::valid_unicode_codepoint($codepoint))
@@ -544,12 +531,7 @@ class Unicode
 	
 	private static function codepoint_to_utf32be($codepoint)
 	{
-		if (!is_int($codepoint))
-		{
-			trigger_error('Unicode::codepoint_to_utf32be() expects parameter 1 to be long, ' . get_type($codepoint) . ' given', E_USER_WARNING);
-			return false;
-		}
-		elseif (self::valid_unicode_codepoint($codepoint))
+		if (self::valid_unicode_codepoint($codepoint))
 		{
 			return pack('N', $codepoint);
 		}
@@ -561,12 +543,7 @@ class Unicode
 	
 	private static function codepoint_to_utf32le($codepoint)
 	{
-		if (!is_int($codepoint))
-		{
-			trigger_error('Unicode::codepoint_to_utf32le() expects parameter 1 to be long, ' . get_type($codepoint) . ' given', E_USER_WARNING);
-			return false;
-		}
-		elseif (self::valid_unicode_codepoint($codepoint))
+		if (self::valid_unicode_codepoint($codepoint))
 		{
 			return pack('V', $codepoint);
 		}
