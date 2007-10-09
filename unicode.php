@@ -326,20 +326,29 @@ class Unicode
 		return $unicode;
 	}
 	
+	/**
+	 * Create a UTF-8 binary string from the object
+	 *
+	 * @return string
+	 */
 	public function to_utf8()
 	{
+		// If it's internally stored as a unicode string, just use PHP's built-in conversion:
 		if (version_compare(phpversion(), '6', '>=') && is_unicode($this->data))
 		{
 			return self::call_unicode_func('unicode_encode', $this->data, 'UTF-8');
 		}
+		// mbstring is an age-old extension for multi-byte strings:
 		elseif (extension_loaded('mbstring') && ($return = @mb_convert_encoding($this->data, 'UTF-8', 'UTF-32BE')))
 		{
 			return $return;
 		}
+		// iconv is platform dependant, but normally works fine:
 		elseif (extension_loaded('iconv') && ($return = @iconv('UTF-32BE', 'UTF-8', $this->data)))
 		{
 			return $return;
 		}
+		// Just use our own rather simple userland code:
 		else
 		{
 			$codepoints = unpack('N*', $this->data);
@@ -352,38 +361,54 @@ class Unicode
 		}
 	}
 	
+	/**
+	 * Convert a unicode codepoint to a UTF-8 character sequence
+	 *
+	 * Warning: on PHP6 with unicode_semantics=on this will return a unicode
+	 * string and not work at all!
+	 *
+	 * @todo Rewrite this so we have no bit-shifts
+	 * @param int $codepoint
+	 * @return string
+	 */
 	private static function codepoint_to_utf8($codepoint)
 	{
+		// Keep a cache of all the codepoints we have already converted (this is actually quicker even with such simple code)
 		static $cache;
+		
+		// Check given parameter is an integer
 		if (!is_int($codepoint))
 		{
 			trigger_error('Unicode::codepoint_to_utf8() expects parameter 1 to be long, ' . get_type($codepoint) . ' given', E_USER_WARNING);
 			return false;
 		}
+		// If we haven't already got it cached, go cache it
 		elseif (!isset($cache[$codepoint]))
 		{
+			// If the codepoint is invalid, just store it as U+FFFD REPLACEMENT CHARACTER
 			if (!self::valid_unicode_codepoint($codepoint))
 			{
-				if ($codepoint <= 0x7F)
-				{
-					$cache[$codepoint] = chr($codepoint);
-				}
-				elseif ($codepoint <= 0x7FF)
-				{
-					$cache[$codepoint] = chr(0xC0 | ($codepoint >> 6)) . chr(0x80 | ($codepoint & 0x3F));
-				}
-				elseif ($codepoint <= 0xFFFF)
-				{
-					$cache[$codepoint] = chr(0xE0 | ($codepoint >> 12)) . chr(0x80 | (($codepoint >> 6) & 0x3F)) . chr(0x80 | ($codepoint & 0x3F));
-				}
-				else
-				{
-					$cache[$codepoint] = chr(0xF0 | ($codepoint >> 18)) . chr(0x80 | (($codepoint >> 12) & 0x3F)) . chr(0x80 | (($codepoint >> 6) & 0x3F)) . chr(0x80 | ($codepoint & 0x3F));
-				}
+				$cache[$codepoint] = "\xEF\xBF\xBD";
 			}
+			// One byte sequence:
+			elseif ($codepoint <= 0x7F)
+			{
+				$cache[$codepoint] = chr($codepoint);
+			}
+			// Two byte sequence:
+			elseif ($codepoint <= 0x7FF)
+			{
+				$cache[$codepoint] = chr(0xC0 | ($codepoint >> 6)) . chr(0x80 | ($codepoint & 0x3F));
+			}
+			// Three byte sequence:
+			elseif ($codepoint <= 0xFFFF)
+			{
+				$cache[$codepoint] = chr(0xE0 | ($codepoint >> 12)) . chr(0x80 | (($codepoint >> 6) & 0x3F)) . chr(0x80 | ($codepoint & 0x3F));
+			}
+			// Four byte sequence:
 			else
 			{
-				$cache[$codepoint] = "\xEF\xBF\xBD";
+				$cache[$codepoint] = chr(0xF0 | ($codepoint >> 18)) . chr(0x80 | (($codepoint >> 12) & 0x3F)) . chr(0x80 | (($codepoint >> 6) & 0x3F)) . chr(0x80 | ($codepoint & 0x3F));
 			}
 		}
 		return $cache[$codepoint];
