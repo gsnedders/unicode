@@ -177,5 +177,49 @@ class Unicode
 		{
 			return $return;
 		}
+		else
+		{
+			$data = unpack('N*', $this->data);
+			$return = '';
+			foreach ($data as $codepoint)
+			{
+				$return .= self::codepoint_to_utf8($codepoint);
+			}
+			return $return;
+		}
+	}
+	
+	private static function codepoint_to_utf8($codepoint)
+	{
+		static $cache;
+		if (!is_int($codepoint))
+		{
+			trigger_error('Unicode::codepoint_to_utf8() expects parameter 1 to be long, ' . get_type($codepoint) . ' given', E_USER_WARNING);
+			return false;
+		}
+		elseif (!isset($cache[$codepoint]))
+		{
+			if ($codepoint >= 0x00 && $codepoint <= 0x7F)
+			{
+				$cache[$codepoint] = chr($codepoint);
+			}
+			elseif ($codepoint <= 0x7FF)
+			{
+				$cache[$codepoint] = chr(0xC0 | ($codepoint >> 6)) . chr(0x80 | ($codepoint & 0x3F));
+			}
+			elseif ($codepoint < 0xD800 || $codepoint > 0xDFFF && $codepoint <= 0xFFFF)
+			{
+				$cache[$codepoint] = chr(0xE0 | ($codepoint >> 12)) . chr(0x80 | (($codepoint >> 6) & 0x3F)) . chr(0x80 | ($codepoint & 0x3F));
+			}
+			elseif ($codepoint <= 0x10FFFF)
+			{
+				$cache[$codepoint] = chr(0xF0 | ($codepoint >> 18)) . chr(0x80 | (($codepoint >> 12) & 0x3F)) . chr(0x80 | (($codepoint >> 6) & 0x3F)) . chr(0x80 | ($codepoint & 0x3F));
+			}
+			else
+			{
+				$cache[$codepoint] = "\xEF\xBF\xBD";
+			}
+		}
+		return $cache[$codepoint];
 	}
 }
