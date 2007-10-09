@@ -105,6 +105,9 @@ class Unicode
 	 *
 	 * @see call_user_func()
 	 * @see Unicode::call_unicode_func_array()
+	 * @param callback $function
+	 * @param mixed $parameter,...
+	 * @return mixed
 	 */
 	private static function call_unicode_func($function)
 	{
@@ -119,9 +122,13 @@ class Unicode
 	 *
 	 * @see call_user_func_array()
 	 * @see Unicode::call_unicode_func()
+	 * @param callback $function
+	 * @param array $param_arr
+	 * @return mixed
 	 */
 	private static function call_unicode_func_array($function, $param_arr)
 	{
+		// Get U+FFFD as a unicode string (which is slightly hard with unicode_semantics=off)
 		static $replacement_character;
 		if (!$replacement_character)
 		{
@@ -134,19 +141,35 @@ class Unicode
 				$replacement_character = unicode_decode("\x00\x00\xFF\xFD", 'UTF-32BE');
 			}
 		}
+		
+		// Save the current unicode enviroment settings
 		$substr_char = unicode_get_subst_char();
 		$from_mode = unicode_get_error_mode(FROM_UNICODE);
 		$to_mode = unicode_get_error_mode(TO_UNICODE);
+		
+		// Set our own unicode enviroment settings
 		unicode_set_subst_char($replacement_character);
 		unicode_set_error_mode(FROM_UNICODE, U_CONV_ERROR_SUBST);
 		unicode_set_error_mode(TO_UNICODE, U_CONV_ERROR_SUBST);
+		
+		// Actually call the function
 		$return = call_user_func_array($function, $param_arr);
+		
+		// Return everything to its prior state
 		unicode_set_subst_char($substr_char);
 		unicode_set_error_mode(FROM_UNICODE, $from_mode);
 		unicode_set_error_mode(TO_UNICODE, $to_mode);
+		
+		// Finally return what the function returned
 		return $return;
 	}
 	
+	/**
+	 * Check the given codepoint is a valid character
+	 *
+	 * @param int $codepoint
+	 * @return bool
+	 */
 	private static function valid_unicode_codepoint($codepoint)
 	{
 		// Outside of Unicode codespace
@@ -166,6 +189,12 @@ class Unicode
 		}
 	}
 	
+	/**
+	 * Create a new Unicode object from a UTF-8 encoded string
+	 *
+	 * @param string $string
+	 * @return Unicode
+	 */
 	public static function from_utf8($string)
 	{
 		if (!is_string($string))
