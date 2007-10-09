@@ -12,7 +12,7 @@ class Unicode
 	{
 		if (version_compare(phpversion(), '6', '>=') && is_unicode($this->data))
 		{
-			$this->data = $this->call_unicode_func('unicode_encode', $this->data, 'UTF-32BE');
+			$this->data = self::call_unicode_func('unicode_encode', $this->data, 'UTF-32BE');
 		}
 		return array('data');
 	}
@@ -26,7 +26,7 @@ class Unicode
 		}
 		elseif (version_compare(phpversion(), '6', '>=') && is_binary($this->data))
 		{
-			$this->data = $this->call_unicode_func('unicode_decode', $this->data, 'UTF-32BE');
+			$this->data = self::call_unicode_func('unicode_decode', $this->data, 'UTF-32BE');
 		}
 		elseif (version_compare(phpversion(), '6', '<') && ($len = strlen($this->data)) % 4)
 		{
@@ -34,14 +34,14 @@ class Unicode
 		}
 	}
 	
-	private function call_unicode_func($function)
+	private static function call_unicode_func($function)
 	{
 		$param_arr = func_get_args();
 		unset($param_arr[0]);
-		return $this->call_unicode_func_array($function, $param_arr);
+		return self::call_unicode_func_array($function, $param_arr);
 	}
 	
-	private function call_unicode_func_array($function, $param_arr)
+	private static function call_unicode_func_array($function, $param_arr)
 	{
 		static $replacement_character;
 		if (!$replacement_character)
@@ -86,7 +86,7 @@ class Unicode
 			}
 			else
 			{
-				$this->data = $this->call_unicode_func('unicode_decode', $string, 'UTF-8');
+				$this->data = self::call_unicode_func('unicode_decode', $string, 'UTF-8');
 			}
 		}
 		else
@@ -182,7 +182,7 @@ class Unicode
 	{
 		if (version_compare(phpversion(), '6', '>=') && is_unicode($this->data))
 		{
-			return $this->call_unicode_func('unicode_encode', $this->data, 'UTF-8');
+			return self::call_unicode_func('unicode_encode', $this->data, 'UTF-8');
 		}
 		elseif (extension_loaded('mbstring') && ($return = @mb_convert_encoding($this->data, 'UTF-8', 'UTF-32BE')))
 		{
