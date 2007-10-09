@@ -12,7 +12,7 @@ class Unicode
 	{
 		if (version_compare(phpversion(), '6', '>=') && is_unicode($this->data))
 		{
-			$this->data = unicode_encode($this->data, 'UTF-32BE');
+			$this->data = $this->call_unicode_func('unicode_encode', $this->data, 'UTF-32BE');
 		}
 		return array('data');
 	}
@@ -26,22 +26,7 @@ class Unicode
 		}
 		elseif (version_compare(phpversion(), '6', '>=') && is_binary($this->data))
 		{
-			static $replacement_character;
-			if (!$replacement_character)
-			{
-				if (unicode_semantics())
-				{
-					$replacement_character = "\uFFFD";
-				}
-				else
-				{
-					$replacement_character = unicode_decode("\x00\x00\xFF\xFD", 'UTF-32BE');
-				}
-			}
-			$substr_char = unicode_get_subst_char();
-			unicode_set_subst_char($replacement_character);
-			$this->data = unicode_decode($this->data, 'UTF-32BE', U_CONV_ERROR_SUBST);
-			unicode_set_subst_char($substr_char);
+			$this->data = $this->call_unicode_func('unicode_decode', $this->data, 'UTF-32BE');
 		}
 		elseif (version_compare(phpversion(), '6', '<') && ($len = strlen($this->data)) % 4)
 		{
@@ -101,22 +86,7 @@ class Unicode
 			}
 			else
 			{
-				static $replacement_character;
-				if (!$replacement_character)
-				{
-					if (unicode_semantics())
-					{
-						$replacement_character = "\uFFFD";
-					}
-					else
-					{
-						$replacement_character = unicode_decode("\x00\x00\xFF\xFD", 'UTF-32BE');
-					}
-				}
-				$substr_char = unicode_get_subst_char();
-				unicode_set_subst_char($replacement_character);
-				$unicode->data = unicode_decode($string, 'UTF-8', U_CONV_ERROR_SUBST);
-				unicode_set_subst_char($substr_char);
+				$this->data = $this->call_unicode_func('unicode_decode', $string, 'UTF-8');
 			}
 		}
 		else
@@ -212,7 +182,7 @@ class Unicode
 	{
 		if (version_compare(phpversion(), '6', '>=') && is_unicode($this->data))
 		{
-			return unicode_encode($this->data, 'UTF-8');
+			return $this->call_unicode_func('unicode_encode', $this->data, 'UTF-8');
 		}
 		elseif (extension_loaded('mbstring') && ($return = @mb_convert_encoding($this->data, 'UTF-8', 'UTF-32BE')))
 		{
