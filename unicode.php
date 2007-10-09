@@ -307,7 +307,7 @@ class Unicode
 						$character = 0xFFFD;
 					}
 					
-					$unicode->data .= self::codepoint_to_utf32be($character);
+					$unicode->data .= pack('N', $character);
 				}
 			}
 			
@@ -464,7 +464,7 @@ class Unicode
 				}
 				else
 				{
-					$unicode->data .= self::codepoint_to_utf32be($codepoint);
+					$unicode->data .= pack('N', $codepoint);
 				}
 			}
 			
@@ -533,13 +533,7 @@ class Unicode
 		}
 		else
 		{
-			$codepoints = unpack('N*', $this->data);
-			$return = '';
-			foreach ($codepoints as $codepoint)
-			{
-				$return .= self::codepoint_to_utf32le($codepoint);
-			}
-			return $return;
+			return call_user_func_array('pack', array_merge(array('V*'), unpack('N*', $this->data)));
 		}
 	}
 	
