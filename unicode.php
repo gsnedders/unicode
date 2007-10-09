@@ -39,14 +39,27 @@
 class Unicode
 {
 	/**
-	 * @var string binary string on PHP < 6, and unicode string on PHP >= 6
+	 * Contains the raw unicode data that we're working from
+	 *
+	 * @var string UTF-32BE binary string on PHP < 6, otherwise a unicode string
 	 */
 	private $data;
 	
+	/**
+	 * Object should be created with some Unicode::from_*() method, therefore
+	 * this is private
+	 */
 	private function __construct()
 	{
 	}
 	
+	/**
+	 * Prepare the object for serialisation
+	 *
+	 * If we're on PHP6, convert the Unicode::$data to a UTF-32BE binary string
+	 * before serialising the object to allow for the object to be unserialised
+	 * on older PHP versions without affecting functionality
+	 */
 	public function __sleep()
 	{
 		if (version_compare(phpversion(), '6', '>=') && is_unicode($this->data))
@@ -56,9 +69,23 @@ class Unicode
 		return array('data');
 	}
 	
+	/**
+	 * Check the object is valid when being unserialised
+	 *
+	 * To prepare the object for use after being unserialised, we need to check
+	 * that it is valid, and to convert Unicode::$data to a unicode string on
+	 * PHP6. If Unicode::$data is not a string, a warning will be thrown. The
+	 * validity of the UTF-32BE Unicode::$data is also checked, and the string
+	 * is corrected if it is invalid.
+	 */
 	public function __wakeup()
 	{
-		if (!is_string($this->data))
+		if (!isset($this->data))
+		{
+			trigger_error('Unicode::__wakeup() expects the serialised object to have a $data property, none exists', E_USER_WARNING);
+			$this->data = '';
+		}
+		elseif (!is_string($this->data))
 		{
 			trigger_error('Unicode::__wakeup() expects Unicode::$data to be string, ' . get_type($this->data) . ' given', E_USER_WARNING);
 			$this->data = '';
@@ -69,7 +96,7 @@ class Unicode
 		}
 		elseif (version_compare(phpversion(), '6', '<') && ($len = strlen($this->data)) % 4)
 		{
-			$this->data = substr($this->data, 0, floor($len / 4)) . "\x00\x00\xFF\xFD";
+			$this->data = substr($this->data, 0, floor($len / 4) * 4) . "\x00\x00\xFF\xFD";
 		}
 	}
 	
@@ -209,6 +236,11 @@ class Unicode
 				}
 			}
 			
+			if (substr($unicode->data, 0, 4) === "\x00\x00\xFE\xF")
+			{
+				$unicode->data = substr($unicode->data, 4);
+			}
+			
 			if (!empty($remaining))
 			{
 				$unicode->data .= "\x00\x00\xFF\xFD";
@@ -233,9 +265,9 @@ class Unicode
 		}
 		else
 		{
-			$data = unpack('N*', $this->data);
+			$codepoints = unpack('N*', $this->data);
 			$return = '';
-			foreach ($data as $codepoint)
+			foreach ($codepoints as $codepoint)
 			{
 				$return .= self::codepoint_to_utf8($codepoint);
 			}
@@ -275,5 +307,79 @@ class Unicode
 			}
 		}
 		return $cache[$codepoint];
+	}
+	
+	public static function from_utf32($string)
+	{
+		if (!is_string($string))
+		{
+			trigger_error('Unicode::from_utf32() expects parameter 1 to be string, ' . get_type($string) . ' given', E_USER_WARNING);
+			return false;
+		}
+		
+		$unicode = new Unicode;
+		
+		if (version_compare(phpversion(), '6', '>='))
+		{
+			if (is_unicode($string))
+			{
+				$unicode->data = $string;
+			}
+			else
+			{
+				$this->data = self::call_unicode_func('unicode_decode', $string, 'UTF-32');
+			}
+		}
+		else
+		{
+			$unicode->data = '';
+			
+			$valid_length = (($len = strlen($string)) % 4) ? false : true;
+			
+			if (!$valid_length)
+			{
+				$string = substr($string, 0, floor($len / 4) * 4);
+			}
+			
+			if (substr($string, 0, 4) === "\xFF\xFE\x00\x00")
+			{
+				$codepoints = unpack('V*', $string);
+			}
+			else
+			{
+				$codepoints = unpack('N*', $string);
+			}
+			
+			foreach ($codepoints as $codepoint)
+			{
+				// Outside of Unicode codespace (the former should never occur, but we better check for it in case of a security hole)
+				if ($codepoint < 0
+					|| $codepoint > 0x10FFFF
+					// UTF-16 Surrogates
+					|| $codepoint >= 0xD800 && $codepoint <= 0xDFFF
+					// Noncharacters
+					|| ($codepoint & 0xFFFE) === 0xFFFE
+					|| $codepoint >= 0xFDD0 && $codepoint <= 0xFDEF)
+				{
+					$unicode->data .= "\x00\x00\xFF\xFD";
+				}
+				else
+				{
+					$unicode->data .= pack('N', $codepoint);
+				}
+			}
+			
+			if (!$valid_length)
+			{
+				$unicode->data .= "\x00\x00\xFF\xFD";
+			}
+			
+			if (substr($unicode->data, 0, 4) === "\x00\x00\xFE\xF")
+			{
+				$unicode->data = substr($unicode->data, 4);
+			}
+		}
+		
+		return $unicode;
 	}
 }
