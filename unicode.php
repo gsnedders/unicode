@@ -95,9 +95,10 @@ class Unicode
 		{
 			$this->data = self::call_unicode_func('unicode_decode', $this->data, 'UTF-32BE');
 		}
-		elseif (version_compare(phpversion(), '6', '<') && ($len = strlen($this->data)) % 4)
+		elseif (version_compare(phpversion(), '6', '<'))
 		{
-			$this->data = substr($this->data, 0, floor($len / 4) * 4) . "\x00\x00\xFF\xFD";
+			$unicode = Unicode::from_utf32be($this->data);
+			$this->data = $unicode->to_utf32be();
 		}
 	}
 	
