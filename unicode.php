@@ -594,10 +594,6 @@ class Unicode
 	/**
 	 * Convert a unicode codepoint to a UTF-32BE character sequence
 	 *
-	 * Warning: on PHP6 with unicode_semantics=on this will return a unicode
-	 * string and not work at all!
-	 *
-	 * @todo Make this work on PHP6
 	 * @param int $codepoint
 	 * @return string
 	 */
@@ -606,6 +602,10 @@ class Unicode
 		if (self::valid_unicode_codepoint($codepoint))
 		{
 			return pack('N', $codepoint);
+		}
+		elseif (version_compare(phpversion(), '6', '>=') && unicode_semantics())
+		{
+			return unicode_encode("\uFFFD", 'UTF-32BE');
 		}
 		else
 		{
@@ -616,10 +616,6 @@ class Unicode
 	/**
 	 * Convert a unicode codepoint to a UTF-32LE character sequence
 	 *
-	 * Warning: on PHP6 with unicode_semantics=on this will return a unicode
-	 * string and not work at all!
-	 *
-	 * @todo Make this work on PHP6
 	 * @param int $codepoint
 	 * @return string
 	 */
@@ -628,6 +624,10 @@ class Unicode
 		if (self::valid_unicode_codepoint($codepoint))
 		{
 			return pack('V', $codepoint);
+		}
+		elseif (version_compare(phpversion(), '6', '>=') && unicode_semantics())
+		{
+			return unicode_encode("\uFFFD", 'UTF-32LE');
 		}
 		else
 		{
