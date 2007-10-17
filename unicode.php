@@ -306,7 +306,7 @@ class Unicode
 				}
 			}
 			
-			// Strip any leading BOM (as otherwise we chage the meaing of the new sequence, which is illegal)
+			// Strip any U+FEFF BYTE ORDER MARK (as otherwise we chage the meaing of the new sequence, which is illegal)
 			if (substr($unicode->data, 0, 4) === "\x00\x00\xFE\xFF")
 			{
 				$unicode->data = substr($unicode->data, 4);
@@ -355,9 +355,7 @@ class Unicode
 	/**
 	 * Convert a unicode codepoint to a UTF-8 character sequence
 	 *
-	 * Warning: on PHP6 with unicode_semantics=on this will return a unicode
-	 * string and not work at all!
-	 *
+	 * @todo Fix on PHP6 with unicode_semantics=on (chr() returns (unicode))
 	 * @todo Rewrite this so we have no bit-shifts
 	 * @param int $codepoint
 	 * @return string
@@ -373,7 +371,14 @@ class Unicode
 			// If the codepoint is invalid, just store it as U+FFFD REPLACEMENT CHARACTER
 			if (!self::valid_unicode_codepoint($codepoint))
 			{
-				$cache[$codepoint] = "\xEF\xBF\xBD";
+				if (version_compare(phpversion(), '6', '>=') && unicode_semantics())
+				{
+					$cache[$codepoint] = unicode_encode("\uFFFD", 'UTF-8');
+				}
+				else
+				{
+					$cache[$codepoint] = "\xEF\xBF\xBD";
+				}
 			}
 			// One byte sequence:
 			elseif ($codepoint <= 0x7F)
@@ -519,6 +524,7 @@ class Unicode
 	/**
 	 * Create a UTF-32 binary string from the object
 	 *
+	 * @todo Make this work on PHP6
 	 * @return string
 	 */
 	public function to_utf32()
@@ -574,6 +580,7 @@ class Unicode
 	 * Warning: on PHP6 with unicode_semantics=on this will return a unicode
 	 * string and not work at all!
 	 *
+	 * @todo Make this work on PHP6
 	 * @param int $codepoint
 	 * @return string
 	 */
@@ -588,6 +595,7 @@ class Unicode
 	 * Warning: on PHP6 with unicode_semantics=on this will return a unicode
 	 * string and not work at all!
 	 *
+	 * @todo Make this work on PHP6
 	 * @param int $codepoint
 	 * @return string
 	 */
@@ -609,6 +617,7 @@ class Unicode
 	 * Warning: on PHP6 with unicode_semantics=on this will return a unicode
 	 * string and not work at all!
 	 *
+	 * @todo Make this work on PHP6
 	 * @param int $codepoint
 	 * @return string
 	 */
