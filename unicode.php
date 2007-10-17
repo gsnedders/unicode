@@ -583,10 +583,6 @@ class Unicode
 	/**
 	 * Convert a unicode codepoint to a UTF-32 character sequence
 	 *
-	 * Warning: on PHP6 with unicode_semantics=on this will return a unicode
-	 * string and not work at all!
-	 *
-	 * @todo Make this work on PHP6
 	 * @param int $codepoint
 	 * @return string
 	 */
