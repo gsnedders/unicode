@@ -524,12 +524,18 @@ class Unicode
 	/**
 	 * Create a UTF-32 binary string from the object
 	 *
-	 * @todo Make this work on PHP6
 	 * @return string
 	 */
 	public function to_utf32()
 	{
-		return "\x00\x00\xFE\xFF" . $this->to_utf32be();
+		if (version_compare(phpversion(), '6', '>=') && unicode_semantics())
+		{
+			return unicode_encode("\uFEFF", 'UTF-32BE') . $this->to_utf32be();
+		}
+		else
+		{
+			return "\x00\x00\xFE\xFF" . $this->to_utf32be();
+		}
 	}
 	
 	/**
