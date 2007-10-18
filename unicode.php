@@ -354,7 +354,6 @@ class Unicode
 	/**
 	 * Convert a unicode codepoint to a UTF-8 character sequence
 	 *
-	 * @todo Fix on PHP6 with unicode_semantics=on (chr() returns (unicode))
 	 * @todo Rewrite this so we have no bit-shifts
 	 * @param int $codepoint
 	 * @return string
@@ -370,14 +369,7 @@ class Unicode
 			// If the codepoint is invalid, just store it as U+FFFD REPLACEMENT CHARACTER
 			if (!self::valid_unicode_codepoint($codepoint))
 			{
-				if (version_compare(phpversion(), '6', '>=') && unicode_semantics())
-				{
-					$cache[$codepoint] = unicode_encode("\uFFFD", 'UTF-8');
-				}
-				else
-				{
-					$cache[$codepoint] = "\xEF\xBF\xBD";
-				}
+				$cache[$codepoint] = "\xEF\xBF\xBD";
 			}
 			// One byte sequence:
 			elseif ($codepoint <= 0x7F)
@@ -398,6 +390,11 @@ class Unicode
 			else
 			{
 				$cache[$codepoint] = chr(0xF0 | ($codepoint >> 18)) . chr(0x80 | (($codepoint >> 12) & 0x3F)) . chr(0x80 | (($codepoint >> 6) & 0x3F)) . chr(0x80 | ($codepoint & 0x3F));
+			}
+			// Convert to binary string on PHP 6 (due to chr() returning (unicode) when unicode_semantics=on this is the simplest way to achieve this).
+			if (version_compare(phpversion(), '6', '>=') && unicode_semantics())
+			{
+				$cache[$codepoint] = unicode_encode($cache[$codepoint], 'ISO-8859-1');
 			}
 		}
 		return $cache[$codepoint];
