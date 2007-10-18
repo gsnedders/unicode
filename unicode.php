@@ -366,8 +366,20 @@ class Unicode
 		// If we haven't already got it cached, go cache it
 		if (!isset($cache[$codepoint]))
 		{
+			// On PHP6, we can use its own unicode support
+			if (version_compare(phpversion(), '6', '>='))
+			{
+				if (unicode_semantics())
+				{
+					$cache[$codepoint] = unicode_encode(self::call_unicode_func('chr', $codepoint), 'UTF-8');
+				}
+				else
+				{
+					$cache[$codepoint] = unicode_encode(self::call_unicode_func('unicode_decode', pack('N', $codepoint), 'UTF-32BE'), 'UTF-8');
+				}
+			}
 			// If the codepoint is invalid, just store it as U+FFFD REPLACEMENT CHARACTER
-			if (!self::valid_unicode_codepoint($codepoint))
+			elseif (!self::valid_unicode_codepoint($codepoint))
 			{
 				$cache[$codepoint] = "\xEF\xBF\xBD";
 			}
@@ -390,11 +402,6 @@ class Unicode
 			else
 			{
 				$cache[$codepoint] = chr(0xF0 | ($codepoint >> 18)) . chr(0x80 | (($codepoint >> 12) & 0x3F)) . chr(0x80 | (($codepoint >> 6) & 0x3F)) . chr(0x80 | ($codepoint & 0x3F));
-			}
-			// Convert to binary string on PHP 6 (due to chr() returning (unicode) when unicode_semantics=on this is the simplest way to achieve this).
-			if (version_compare(phpversion(), '6', '>=') && unicode_semantics())
-			{
-				$cache[$codepoint] = unicode_encode($cache[$codepoint], 'ISO-8859-1');
 			}
 		}
 		return $cache[$codepoint];
