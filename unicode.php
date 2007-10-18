@@ -97,8 +97,7 @@ class Unicode
 		}
 		elseif (version_compare(phpversion(), '6', '<'))
 		{
-			$unicode = Unicode::from_utf32be($this->data);
-			$this->data = $unicode->to_utf32be();
+			$this->data = Unicode::from_utf32be($this->data)->to_utf32be();
 		}
 	}
 	
