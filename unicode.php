@@ -554,6 +554,36 @@ class Unicode
 	}
 	
 	/**
+	 * Create a new Unicode object from a UTF-16BE encoded string
+	 *
+	 * @param string $string
+	 * @return Unicode
+	 */
+	public static function from_utf16be($string)
+	{
+		if ((version_compare(phpversion(), '6', '<') || is_binary($string)) && substr($string, 0, 2) !== "\xFE\xFF")
+		{
+			$string = "\xFE\xFF" . $string;
+		}
+		return self::from_utf16($string);
+	}
+	
+	/**
+	 * Create a new Unicode object from a UTF-16LE encoded string
+	 *
+	 * @param string $string
+	 * @return Unicode
+	 */
+	public static function from_utf16le($string)
+	{
+		if ((version_compare(phpversion(), '6', '<') || is_binary($string)) && substr($string, 0, 2) !== "\xFF\xFE")
+		{
+			$string = "\xFF\xFE" . $string;
+		}
+		return self::from_utf16($string);
+	}
+	
+	/**
 	 * Create a UTF-16BE binary string from the object
 	 *
 	 * @return string
