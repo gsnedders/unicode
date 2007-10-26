@@ -568,6 +568,37 @@ class Unicode
 	}
 	
 	/**
+	 * Create a UTF-16LE binary string from the object
+	 *
+	 * @return string
+	 */
+	public function to_utf16le()
+	{
+		if (version_compare(phpversion(), '6', '>=') && is_unicode($this->data))
+		{
+			return self::call_unicode_func('unicode_encode', $this->data, 'UTF-16LE');
+		}
+		elseif (extension_loaded('mbstring') && ($return = @mb_convert_encoding($this->data, 'UTF-16LE', 'UTF-32BE')))
+		{
+			return $return;
+		}
+		elseif (extension_loaded('iconv') && ($return = @iconv('UTF-32BE', 'UTF-16LE', $this->data)))
+		{
+			return $return;
+		}
+		else
+		{
+			$codepoints = unpack('N*', $this->data);
+			$return = '';
+			foreach ($codepoints as $codepoint)
+			{
+				$return .= self::codepoint_to_utf16le($codepoint);
+			}
+			return $return;
+		}
+	}
+	
+	/**
 	 * Convert a unicode codepoint to a UTF-16BE character sequence
 	 *
 	 * @param int $codepoint
@@ -586,11 +617,11 @@ class Unicode
 			{
 				if (unicode_semantics())
 				{
-					$cache[$codepoint] = unicode_encode(self::call_unicode_func('chr', $codepoint), 'UTF-16');
+					$cache[$codepoint] = unicode_encode(self::call_unicode_func('chr', $codepoint), 'UTF-16BE');
 				}
 				else
 				{
-					$cache[$codepoint] = unicode_encode(self::call_unicode_func('unicode_decode', pack('N', $codepoint), 'UTF-32BE'), 'UTF-16');
+					$cache[$codepoint] = unicode_encode(self::call_unicode_func('unicode_decode', pack('N', $codepoint), 'UTF-32BE'), 'UTF-16BE');
 				}
 			}
 			// If the codepoint is invalid, just store it as U+FFFD REPLACEMENT CHARACTER
@@ -608,6 +639,52 @@ class Unicode
 			{
 				$surrogate_code_point = $codepoint - 0x10000;
 				$cache[$codepoint] = pack('n*', ($codepoint >> 10) | 0xD800, ($codepoint & 0x03FF) | 0xDC00);
+			}
+		}
+		return $cache[$codepoint];
+	}
+	
+	/**
+	 * Convert a unicode codepoint to a UTF-16LE character sequence
+	 *
+	 * @param int $codepoint
+	 * @return string
+	 */
+	private static function codepoint_to_utf16le($codepoint)
+	{
+		// Keep a cache of all the codepoints we have already converted (this is actually quicker even with such simple code)
+		static $cache;
+		
+		// If we haven't already got it cached, go cache it
+		if (!isset($cache[$codepoint]))
+		{
+			// On PHP6, we can use its own unicode support
+			if (version_compare(phpversion(), '6', '>='))
+			{
+				if (unicode_semantics())
+				{
+					$cache[$codepoint] = unicode_encode(self::call_unicode_func('chr', $codepoint), 'UTF-16LE');
+				}
+				else
+				{
+					$cache[$codepoint] = unicode_encode(self::call_unicode_func('unicode_decode', pack('N', $codepoint), 'UTF-32BE'), 'UTF-16LE');
+				}
+			}
+			// If the codepoint is invalid, just store it as U+FFFD REPLACEMENT CHARACTER
+			elseif (!self::valid_unicode_codepoint($codepoint))
+			{
+				$cache[$codepoint] = "\xFD\xFF";
+			}
+			// Without a surrogate:
+			elseif ($codepoint < 0x10000)
+			{
+				$cache[$codepoint] = pack('v', $codepoint);
+			}
+			// With a surrogate
+			else
+			{
+				$surrogate_code_point = $codepoint - 0x10000;
+				$cache[$codepoint] = pack('v*', ($codepoint >> 10) | 0xD800, ($codepoint & 0x03FF) | 0xDC00);
 			}
 		}
 		return $cache[$codepoint];
