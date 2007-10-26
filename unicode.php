@@ -537,21 +537,21 @@ class Unicode
 	}
 	
 	/**
-	 * Create a UTF-16 binary string from the object
+	 * Create a UTF-16BE binary string from the object
 	 *
 	 * @return string
 	 */
-	public function to_utf16()
+	public function to_utf16be()
 	{
 		if (version_compare(phpversion(), '6', '>=') && is_unicode($this->data))
 		{
-			return self::call_unicode_func('unicode_encode', $this->data, 'UTF-16');
+			return self::call_unicode_func('unicode_encode', $this->data, 'UTF-16BE');
 		}
-		elseif (extension_loaded('mbstring') && ($return = @mb_convert_encoding($this->data, 'UTF-16', 'UTF-32BE')))
+		elseif (extension_loaded('mbstring') && ($return = @mb_convert_encoding($this->data, 'UTF-16BE', 'UTF-32BE')))
 		{
 			return $return;
 		}
-		elseif (extension_loaded('iconv') && ($return = @iconv('UTF-32BE', 'UTF-16', $this->data)))
+		elseif (extension_loaded('iconv') && ($return = @iconv('UTF-32BE', 'UTF-16BE', $this->data)))
 		{
 			return $return;
 		}
@@ -561,7 +561,7 @@ class Unicode
 			$return = '';
 			foreach ($codepoints as $codepoint)
 			{
-				$return .= self::codepoint_to_utf16($codepoint);
+				$return .= self::codepoint_to_utf16be($codepoint);
 			}
 			return $return;
 		}
@@ -570,7 +570,6 @@ class Unicode
 	/**
 	 * Convert a unicode codepoint to a UTF-16BE character sequence
 	 *
-	 * @todo Rewrite this so we have no bit-shifts
 	 * @param int $codepoint
 	 * @return string
 	 */
