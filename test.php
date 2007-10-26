@@ -10,4 +10,4 @@ $data = file_get_contents('UTF-8-test.txt');
 
 $unicode = Unicode::from_utf8($data);
 
-echo $unicode->to_utf8();
+echo $unicode->to_utf16();

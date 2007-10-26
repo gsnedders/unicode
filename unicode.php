@@ -537,23 +537,6 @@ class Unicode
 	}
 	
 	/**
-	 * Create a UTF-16 binary string from the object
-	 *
-	 * @return string
-	 */
-	public function to_utf16()
-	{
-		if (version_compare(phpversion(), '6', '>=') && unicode_semantics())
-		{
-			return unicode_encode("\uFEFF", 'UTF-16BE') . $this->to_utf16be();
-		}
-		else
-		{
-			return "\xFE\xFF" . $this->to_utf16be();
-		}
-	}
-	
-	/**
 	 * Create a new Unicode object from a UTF-16BE encoded string
 	 *
 	 * @param string $string
@@ -581,6 +564,23 @@ class Unicode
 			$string = "\xFF\xFE" . $string;
 		}
 		return self::from_utf16($string);
+	}
+	
+	/**
+	 * Create a UTF-16 binary string from the object
+	 *
+	 * @return string
+	 */
+	public function to_utf16()
+	{
+		if (version_compare(phpversion(), '6', '>=') && unicode_semantics())
+		{
+			return unicode_encode("\uFEFF", 'UTF-16BE') . $this->to_utf16be();
+		}
+		else
+		{
+			return "\xFE\xFF" . $this->to_utf16be();
+		}
 	}
 	
 	/**
