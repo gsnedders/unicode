@@ -408,6 +408,213 @@ class Unicode
 	}
 	
 	/**
+	 * Create a new Unicode object from a UTF-16 encoded string
+	 *
+	 * @param string $string
+	 * @return Unicode
+	 */
+	public static function from_utf16($string)
+	{
+		// Check given parameter is a string
+		if (!is_string($string))
+		{
+			trigger_error('Unicode::from_utf8() expects parameter 1 to be string, ' . get_type($string) . ' given', E_USER_WARNING);
+			return false;
+		}
+		
+		// Create new object
+		$unicode = new Unicode;
+		
+		// If we're on PHP6, we'll just get a unicode string and store that
+		if (version_compare(phpversion(), '6', '>='))
+		{
+			if (is_unicode($string))
+			{
+				$unicode->data = $string;
+			}
+			else
+			{
+				$this->data = self::call_unicode_func('unicode_decode', $string, 'UTF-16');
+			}
+		}
+		// Otherwise, we need to decode the UTF-16 string
+		else
+		{
+			// Set the data to an empty string and surrogate to false
+			$unicode->data = '';
+			$surrogate = false;
+			
+			// See if the string is of a valid length (as UTF-16 is in two byte sequences, it must be divisible by two)
+			$valid_length = (($len = strlen($string)) % 2) ? false : true;
+			
+			// If it is of an invalid length, trim all the invalid bytes at the end (we'll replace them with a U+FFFD REPLACEMENT CHARACTER later)
+			if (!$valid_length)
+			{
+				$string = substr($string, 0, floor($len / 2) * 2);
+			}
+			
+			// If the string starts with a UTF-16LE BOM, it is UTF-16LE, so decode it as such
+			if (substr($string, 0, 2) === "\xFF\xFE")
+			{
+				$words = unpack('v*', $string);
+			}
+			// Otherwise, it is UTF-16BE, so decode it as such
+			else
+			{
+				$words = unpack('n*', $string);
+			}
+			
+			// Recurse through each and every word
+			for ($i = 0, $word_count = count($words); $i < $word_count; $i++)
+			{
+				// If we're the first word of sequence:
+				if (!$surrogate)
+				{
+					// One word sequence:
+					if (self::valid_unicode_codepoint($words[$i]))
+					{
+						$unicode->data .= pack('N', $words[$i]);
+					}
+					// Two word sequence:
+					elseif ($value >= 0xD800 && $words[$i] <= 0xDFFF)
+					{
+						$character = ($words[$i] & 0x3FF) << 10;
+						$surrogate = true;
+					}
+					// Invalid word:
+					else
+					{
+						$unicode->data .= pack('N', 0xFFFD);
+					}
+				}
+				// Second word:
+				else
+				{
+					// Surrogates are only ever two words, so we can say we've reached the end with certainty
+					$surrogate = false;
+					
+					// Check that the word is valid, then add it to the character:
+					if ($value >= 0xDC00 && $words[$i] <= 0xDFFF)
+					{
+						$character |= $words[$i] & 0x3FF;
+						if (self::valid_unicode_codepoint($character))
+						{
+							$unicode->data .= pack('N', $character);
+						}
+						else
+						{
+							$unicode->data .= pack('N', 0xFFFD);
+						}
+					}
+					// If it is invalid, count the sequence as invalid and reprocess the current word as a first word:
+					else
+					{
+						$unicode->data .= pack('N', 0xFFFD);
+						$i--;
+					}
+				}
+			}
+			
+			// If we've reached the end of the string but not the end of a surrogate pair, append a U+FFFD REPLACEMENT CHARACTER
+			if ($surrogate)
+			{
+				$unicode->data .= "\x00\x00\xFF\xFD";
+			}
+			
+			// If it was of an invalid length, append a U+FFFD REPLACEMENT CHARACTER
+			if (!$valid_length)
+			{
+				$unicode->data .= "\x00\x00\xFF\xFD";
+			}
+			
+			// Strip any U+FEFF BYTE ORDER MARK (as otherwise we chage the meaing of the new sequence, which is illegal)
+			if (substr($unicode->data, 0, 4) === "\x00\x00\xFE\xFF")
+			{
+				$unicode->data = substr($unicode->data, 4);
+			}
+		}
+		return $unicode;
+	}
+	
+	/**
+	 * Create a UTF-16 binary string from the object
+	 *
+	 * @return string
+	 */
+	public function to_utf16()
+	{
+		if (version_compare(phpversion(), '6', '>=') && is_unicode($this->data))
+		{
+			return self::call_unicode_func('unicode_encode', $this->data, 'UTF-16');
+		}
+		elseif (extension_loaded('mbstring') && ($return = @mb_convert_encoding($this->data, 'UTF-16', 'UTF-32BE')))
+		{
+			return $return;
+		}
+		elseif (extension_loaded('iconv') && ($return = @iconv('UTF-32BE', 'UTF-16', $this->data)))
+		{
+			return $return;
+		}
+		else
+		{
+			$codepoints = unpack('N*', $this->data);
+			$return = '';
+			foreach ($codepoints as $codepoint)
+			{
+				$return .= self::codepoint_to_utf16($codepoint);
+			}
+			return $return;
+		}
+	}
+	
+	/**
+	 * Convert a unicode codepoint to a UTF-16BE character sequence
+	 *
+	 * @todo Rewrite this so we have no bit-shifts
+	 * @param int $codepoint
+	 * @return string
+	 */
+	private static function codepoint_to_utf16be($codepoint)
+	{
+		// Keep a cache of all the codepoints we have already converted (this is actually quicker even with such simple code)
+		static $cache;
+		
+		// If we haven't already got it cached, go cache it
+		if (!isset($cache[$codepoint]))
+		{
+			// On PHP6, we can use its own unicode support
+			if (version_compare(phpversion(), '6', '>='))
+			{
+				if (unicode_semantics())
+				{
+					$cache[$codepoint] = unicode_encode(self::call_unicode_func('chr', $codepoint), 'UTF-16');
+				}
+				else
+				{
+					$cache[$codepoint] = unicode_encode(self::call_unicode_func('unicode_decode', pack('N', $codepoint), 'UTF-32BE'), 'UTF-16');
+				}
+			}
+			// If the codepoint is invalid, just store it as U+FFFD REPLACEMENT CHARACTER
+			elseif (!self::valid_unicode_codepoint($codepoint))
+			{
+				$cache[$codepoint] = "\xFF\xFD";
+			}
+			// Without a surrogate:
+			elseif ($codepoint < 0x10000)
+			{
+				$cache[$codepoint] = pack('n', $codepoint);
+			}
+			// With a surrogate
+			else
+			{
+				$surrogate_code_point = $codepoint - 0x10000;
+				$cache[$codepoint] = pack('n*', ($codepoint >> 10) | 0xD800, ($codepoint & 0x03FF) | 0xDC00);
+			}
+		}
+		return $cache[$codepoint];
+	}
+	
+	/**
 	 * Create a new Unicode object from a UTF-32 encoded string
 	 *
 	 * @param string $string
