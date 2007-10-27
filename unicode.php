@@ -217,7 +217,7 @@ class Unicode
 			}
 			else
 			{
-				$this->data = self::call_unicode_func('unicode_decode', $string, 'UTF-8');
+				$unicode->data = self::call_unicode_func('unicode_decode', $string, 'UTF-8');
 			}
 		}
 		// Otherwise, we need to decode the UTF-8 string
