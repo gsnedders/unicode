@@ -26,7 +26,7 @@
  *
  * @todo Ensure proper PHP6 support (mainly through strings being unicode strings by default)
  * @package Unicode
- * @version 0.1-dev
+ * @version 0.1
  * @copyright 2007 Geoffrey Sneddon
  * @author Geoffrey Sneddon
  * @license http://www.opensource.org/licenses/mit-license.php The MIT License
