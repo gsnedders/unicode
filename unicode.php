@@ -26,7 +26,7 @@
  *
  * @todo Ensure proper PHP6 support (mainly through strings being unicode strings by default)
  * @package Unicode
- * @version 0.1
+ * @version 0.2-dev
  * @copyright 2007 Geoffrey Sneddon
  * @author Geoffrey Sneddon
  * @license http://www.opensource.org/licenses/mit-license.php The MIT License
@@ -65,7 +65,7 @@ class Unicode
 	{
 		if (version_compare(phpversion(), '6', '>=') && is_unicode($this->data))
 		{
-			$this->data = self::call_unicode_func('unicode_encode', $this->data, 'UTF-32BE');
+			$this->data = unicode_encode($this->data, 'UTF-32BE');
 		}
 		return array('data');
 	}
@@ -93,7 +93,7 @@ class Unicode
 		}
 		elseif (version_compare(phpversion(), '6', '>=') && is_binary($this->data))
 		{
-			$this->data = self::call_unicode_func('unicode_decode', $this->data, 'UTF-32BE');
+			$this->data = self::call_unicode_func('unicode_decode', $this->data, 'UTF-32BE', U_CONV_ERROR_SUBST);
 		}
 		elseif (version_compare(phpversion(), '6', '<'))
 		{
@@ -217,7 +217,7 @@ class Unicode
 			}
 			else
 			{
-				$unicode->data = self::call_unicode_func('unicode_decode', $string, 'UTF-8');
+				$unicode->data = self::call_unicode_func('unicode_decode', $string, 'UTF-8', U_CONV_ERROR_SUBST);
 			}
 		}
 		// Otherwise, we need to decode the UTF-8 string
@@ -329,7 +329,7 @@ class Unicode
 	{
 		if (version_compare(phpversion(), '6', '>=') && is_unicode($this->data))
 		{
-			return self::call_unicode_func('unicode_encode', $this->data, 'UTF-8');
+			return unicode_encode($this->data, 'UTF-8');
 		}
 		elseif (extension_loaded('mbstring') && ($return = @mb_convert_encoding($this->data, 'UTF-8', 'UTF-32BE')))
 		{
@@ -375,7 +375,7 @@ class Unicode
 				}
 				else
 				{
-					$cache[$codepoint] = unicode_encode(self::call_unicode_func('unicode_decode', pack('N', $codepoint), 'UTF-32BE'), 'UTF-8');
+					$cache[$codepoint] = unicode_encode(self::call_unicode_func('unicode_decode', pack('N', $codepoint), 'UTF-32BE', U_CONV_ERROR_SUBST), 'UTF-8');
 				}
 			}
 			// If the codepoint is invalid, just store it as U+FFFD REPLACEMENT CHARACTER
@@ -434,7 +434,7 @@ class Unicode
 			}
 			else
 			{
-				$this->data = self::call_unicode_func('unicode_decode', $string, 'UTF-16');
+				$this->data = self::call_unicode_func('unicode_decode', $string, 'UTF-16', U_CONV_ERROR_SUBST);
 			}
 		}
 		// Otherwise, we need to decode the UTF-16 string
@@ -592,7 +592,7 @@ class Unicode
 	{
 		if (version_compare(phpversion(), '6', '>=') && is_unicode($this->data))
 		{
-			return self::call_unicode_func('unicode_encode', $this->data, 'UTF-16BE');
+			return unicode_encode($this->data, 'UTF-16BE');
 		}
 		elseif (extension_loaded('mbstring') && ($return = @mb_convert_encoding($this->data, 'UTF-16BE', 'UTF-32BE')))
 		{
@@ -623,7 +623,7 @@ class Unicode
 	{
 		if (version_compare(phpversion(), '6', '>=') && is_unicode($this->data))
 		{
-			return self::call_unicode_func('unicode_encode', $this->data, 'UTF-16LE');
+			return unicode_encode($this->data, 'UTF-16LE');
 		}
 		elseif (extension_loaded('mbstring') && ($return = @mb_convert_encoding($this->data, 'UTF-16LE', 'UTF-32BE')))
 		{
@@ -679,7 +679,7 @@ class Unicode
 				}
 				else
 				{
-					$cache[$codepoint] = unicode_encode(self::call_unicode_func('unicode_decode', pack('N', $codepoint), 'UTF-32BE'), 'UTF-16BE');
+					$cache[$codepoint] = unicode_encode(self::call_unicode_func('unicode_decode', pack('N', $codepoint), 'UTF-32BE', U_CONV_ERROR_SUBST), 'UTF-16BE');
 				}
 			}
 			// If the codepoint is invalid, just store it as U+FFFD REPLACEMENT CHARACTER
@@ -725,7 +725,7 @@ class Unicode
 				}
 				else
 				{
-					$cache[$codepoint] = unicode_encode(self::call_unicode_func('unicode_decode', pack('N', $codepoint), 'UTF-32BE'), 'UTF-16LE');
+					$cache[$codepoint] = unicode_encode(self::call_unicode_func('unicode_decode', pack('N', $codepoint), 'UTF-32BE', U_CONV_ERROR_SUBST), 'UTF-16LE');
 				}
 			}
 			// If the codepoint is invalid, just store it as U+FFFD REPLACEMENT CHARACTER
@@ -775,7 +775,7 @@ class Unicode
 			}
 			else
 			{
-				$this->data = self::call_unicode_func('unicode_decode', $string, 'UTF-32');
+				$this->data = self::call_unicode_func('unicode_decode', $string, 'UTF-32', U_CONV_ERROR_SUBST);
 			}
 		}
 		// Otherwise, we need to decode the UTF-32 string
@@ -891,7 +891,7 @@ class Unicode
 	{
 		if (version_compare(phpversion(), '6', '>=') && is_unicode($this->data))
 		{
-			return self::call_unicode_func('unicode_encode', $this->data, 'UTF-32BE');
+			return unicode_encode($this->data, 'UTF-32BE');
 		}
 		else
 		{
@@ -908,7 +908,7 @@ class Unicode
 	{
 		if (version_compare(phpversion(), '6', '>=') && is_unicode($this->data))
 		{
-			return self::call_unicode_func('unicode_encode', $this->data, 'UTF-32LE');
+			return unicode_encode($this->data, 'UTF-32LE');
 		}
 		elseif (extension_loaded('mbstring') && ($return = @mb_convert_encoding($this->data, 'UTF-32LE', 'UTF-32BE')))
 		{
