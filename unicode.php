@@ -93,7 +93,7 @@ class Unicode
 		}
 		elseif (version_compare(phpversion(), '6', '>=') && is_binary($this->data))
 		{
-			$this->data = self::call_unicode_func('unicode_decode', $this->data, 'UTF-32BE', U_CONV_ERROR_SUBST);
+			$this->data = self::call_unicode_func('unicode_decode', $this->data, 'UTF-32BE');
 		}
 		elseif (version_compare(phpversion(), '6', '<'))
 		{
@@ -217,7 +217,7 @@ class Unicode
 			}
 			else
 			{
-				$unicode->data = self::call_unicode_func('unicode_decode', $string, 'UTF-8', U_CONV_ERROR_SUBST);
+				$unicode->data = self::call_unicode_func('unicode_decode', $string, 'UTF-8');
 			}
 		}
 		// Otherwise, we need to decode the UTF-8 string
@@ -375,7 +375,7 @@ class Unicode
 				}
 				else
 				{
-					$cache[$codepoint] = unicode_encode(self::call_unicode_func('unicode_decode', pack('N', $codepoint), 'UTF-32BE', U_CONV_ERROR_SUBST), 'UTF-8');
+					$cache[$codepoint] = unicode_encode(self::call_unicode_func('unicode_decode', pack('N', $codepoint), 'UTF-32BE'), 'UTF-8');
 				}
 			}
 			// If the codepoint is invalid, just store it as U+FFFD REPLACEMENT CHARACTER
@@ -434,7 +434,7 @@ class Unicode
 			}
 			else
 			{
-				$this->data = self::call_unicode_func('unicode_decode', $string, 'UTF-16', U_CONV_ERROR_SUBST);
+				$this->data = self::call_unicode_func('unicode_decode', $string, 'UTF-16');
 			}
 		}
 		// Otherwise, we need to decode the UTF-16 string
@@ -679,7 +679,7 @@ class Unicode
 				}
 				else
 				{
-					$cache[$codepoint] = unicode_encode(self::call_unicode_func('unicode_decode', pack('N', $codepoint), 'UTF-32BE', U_CONV_ERROR_SUBST), 'UTF-16BE');
+					$cache[$codepoint] = unicode_encode(self::call_unicode_func('unicode_decode', pack('N', $codepoint), 'UTF-32BE'), 'UTF-16BE');
 				}
 			}
 			// If the codepoint is invalid, just store it as U+FFFD REPLACEMENT CHARACTER
@@ -725,7 +725,7 @@ class Unicode
 				}
 				else
 				{
-					$cache[$codepoint] = unicode_encode(self::call_unicode_func('unicode_decode', pack('N', $codepoint), 'UTF-32BE', U_CONV_ERROR_SUBST), 'UTF-16LE');
+					$cache[$codepoint] = unicode_encode(self::call_unicode_func('unicode_decode', pack('N', $codepoint), 'UTF-32BE'), 'UTF-16LE');
 				}
 			}
 			// If the codepoint is invalid, just store it as U+FFFD REPLACEMENT CHARACTER
@@ -775,7 +775,7 @@ class Unicode
 			}
 			else
 			{
-				$this->data = self::call_unicode_func('unicode_decode', $string, 'UTF-32', U_CONV_ERROR_SUBST);
+				$this->data = self::call_unicode_func('unicode_decode', $string, 'UTF-32');
 			}
 		}
 		// Otherwise, we need to decode the UTF-32 string
