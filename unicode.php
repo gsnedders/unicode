@@ -193,7 +193,7 @@ class Unicode
 	/**
 	 * Create a new Unicode object from an array of codepoints
 	 *
-	 * @param string $string
+	 * @param array $array
 	 * @return Unicode
 	 */
 	public static function from_codepoint_array($array)
@@ -214,6 +214,7 @@ class Unicode
 			array_splice($array, 1);
 		}
 		
+		// Iterate through each and every codepoint
 		foreach ($array as $codepoint)
 		{
 			// If the codepoint is an invalid character replace it with a U+FFFD REPLACEMENT CHARACTER
@@ -274,7 +275,7 @@ class Unicode
 			$unicode->data = '';
 			$remaining = 0;
 			
-			// Recurse through each and every byte
+			// Iterate through each and every byte
 			for ($i = 0, $len = strlen($string); $i < $len; $i++)
 			{
 				$value = ord($string[$i]);
@@ -504,7 +505,7 @@ class Unicode
 				$words = unpack('n*', $string);
 			}
 			
-			// Recurse through each and every word
+			// Iterate through each and every word
 			for ($i = 0, $word_count = count($words); $i < $word_count; $i++)
 			{
 				// If we're the first word of sequence:
@@ -830,7 +831,7 @@ class Unicode
 				$codepoints = unpack('N*', $string);
 			}
 			
-			// Recurse through each and every codepoint
+			// Iterate through each and every codepoint
 			foreach ($codepoints as $codepoint)
 			{
 				// If the codepoint is an invalid character replace it with a U+FFFD REPLACEMENT CHARACTER
