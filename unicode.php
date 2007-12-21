@@ -191,6 +191,53 @@ class Unicode
 	}
 	
 	/**
+	 * Create a new Unicode object from an array of codepoints
+	 *
+	 * @param string $string
+	 * @return Unicode
+	 */
+	public static function from_codepoint_array($array)
+	{
+		// Check given parameter is an array
+		if (!is_array($string))
+		{
+			trigger_error('Unicode::from_codepoint_array() expects parameter 1 to be array, ' . get_type($string) . ' given', E_USER_WARNING);
+			return false;
+		}
+		
+		// Create new object
+		$unicode = new Unicode;
+		
+		// Strip any leading BOM (as otherwise we chage the meaing of the new sequence, which is illegal)
+		if (isset($array[0]) && $array[0] === 0xFFFD)
+		{
+			array_splice($array, 1);
+		}
+		
+		foreach ($array as $codepoint)
+		{
+			// If the codepoint is an invalid character replace it with a U+FFFD REPLACEMENT CHARACTER
+			if (!self::valid_unicode_codepoint($codepoint))
+			{
+				$unicode->data .= "\x00\x00\xFF\xFD";
+			}
+			// Otherwise, append it to Unicode::$data
+			else
+			{
+				$unicode->data .= pack('N', $codepoint);
+			}
+		}
+		
+		// If we're on PHP6, convert it to a unicode string and store that
+		if (version_compare(phpversion(), '6', '>='))
+		{
+			$unicode->data = unicode_decode($string, 'UTF-32BE');
+		}
+		
+		return $unicode;
+	}
+	
+	/**
 	 * Create a new Unicode object from a UTF-8 encoded string
 	 *
 	 * @param string $string
@@ -427,7 +474,7 @@ class Unicode
 			}
 			else
 			{
-				$this->data = self::call_unicode_func('unicode_decode', $string, 'UTF-16');
+				$unicode->data = self::call_unicode_func('unicode_decode', $string, 'UTF-16');
 			}
 		}
 		// Otherwise, we need to decode the UTF-16 string
@@ -754,7 +801,7 @@ class Unicode
 			}
 			else
 			{
-				$this->data = self::call_unicode_func('unicode_decode', $string, 'UTF-32');
+				$unicode->data = self::call_unicode_func('unicode_decode', $string, 'UTF-32');
 			}
 		}
 		// Otherwise, we need to decode the UTF-32 string
