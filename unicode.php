@@ -367,16 +367,9 @@ class Unicode
 		if (!isset($cache[$codepoint]))
 		{
 			// On PHP6, we can use its own unicode support
-			if (version_compare(phpversion(), '6', '>='))
+			if (version_compare(phpversion(), '6', '>=') && unicode_semantics())
 			{
-				if (unicode_semantics())
-				{
-					$cache[$codepoint] = unicode_encode(self::call_unicode_func('chr', $codepoint), 'UTF-8');
-				}
-				else
-				{
-					$cache[$codepoint] = unicode_encode(self::call_unicode_func('unicode_decode', pack('N', $codepoint), 'UTF-32BE'), 'UTF-8');
-				}
+				$cache[$codepoint] = unicode_encode(self::call_unicode_func('chr', $codepoint), 'UTF-8');
 			}
 			// If the codepoint is invalid, just store it as U+FFFD REPLACEMENT CHARACTER
 			elseif (!self::valid_unicode_codepoint($codepoint))
@@ -671,16 +664,9 @@ class Unicode
 		if (!isset($cache[$codepoint]))
 		{
 			// On PHP6, we can use its own unicode support
-			if (version_compare(phpversion(), '6', '>='))
+			if (version_compare(phpversion(), '6', '>=') && unicode_semantics())
 			{
-				if (unicode_semantics())
-				{
-					$cache[$codepoint] = unicode_encode(self::call_unicode_func('chr', $codepoint), 'UTF-16BE');
-				}
-				else
-				{
-					$cache[$codepoint] = unicode_encode(self::call_unicode_func('unicode_decode', pack('N', $codepoint), 'UTF-32BE'), 'UTF-16BE');
-				}
+				$cache[$codepoint] = unicode_encode(self::call_unicode_func('chr', $codepoint), 'UTF-16BE');
 			}
 			// If the codepoint is invalid, just store it as U+FFFD REPLACEMENT CHARACTER
 			elseif (!self::valid_unicode_codepoint($codepoint))
@@ -717,16 +703,9 @@ class Unicode
 		if (!isset($cache[$codepoint]))
 		{
 			// On PHP6, we can use its own unicode support
-			if (version_compare(phpversion(), '6', '>='))
+			if (version_compare(phpversion(), '6', '>=') && unicode_semantics())
 			{
-				if (unicode_semantics())
-				{
-					$cache[$codepoint] = unicode_encode(self::call_unicode_func('chr', $codepoint), 'UTF-16LE');
-				}
-				else
-				{
-					$cache[$codepoint] = unicode_encode(self::call_unicode_func('unicode_decode', pack('N', $codepoint), 'UTF-32BE'), 'UTF-16LE');
-				}
+				$cache[$codepoint] = unicode_encode(self::call_unicode_func('chr', $codepoint), 'UTF-16LE');
 			}
 			// If the codepoint is invalid, just store it as U+FFFD REPLACEMENT CHARACTER
 			elseif (!self::valid_unicode_codepoint($codepoint))
