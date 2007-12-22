@@ -612,12 +612,19 @@ class Unicode
 	 * Create a new Unicode object from a UTF-16BE encoded string
 	 *
 	 * @todo Make unicode_semantics=On safe
-	 * @todo Check parameter is a string at all
 	 * @param string $string
 	 * @return Unicode
 	 */
 	public static function from_utf16be($string)
 	{
+		// Check given parameter is a string
+		if (!is_string($string))
+		{
+			trigger_error('Unicode::from_utf16be() expects parameter 1 to be string, ' . get_type($string) . ' given', E_USER_WARNING);
+			return false;
+		}
+		
+		// Add BOM before calling Unicode::from_utf16() if it doesn't already exist
 		if ((version_compare(phpversion(), '6', '<') || is_binary($string)) && substr($string, 0, 2) !== "\xFE\xFF")
 		{
 			$string = "\xFE\xFF" . $string;
