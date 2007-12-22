@@ -239,6 +239,24 @@ class Unicode
 	}
 	
 	/**
+	 * Create an array of codepoints from the object
+	 *
+	 * @return string
+	 */
+	public function to_codepoint_array()
+	{
+		if (version_compare(phpversion(), '6', '>=') && is_unicode($this->data))
+		{
+			$data = unicode_encode($this->data, 'UTF-32BE');
+		}
+		else
+		{
+			$data = $this->data;
+		}
+		return unpack('N*', $data);
+	}
+	
+	/**
 	 * Create a new Unicode object from a UTF-8 encoded string
 	 *
 	 * @param string $string
@@ -922,7 +940,7 @@ class Unicode
 		}
 		else
 		{
-			return $unicode->data;
+			return $this->data;
 		}
 	}
 	
