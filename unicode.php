@@ -647,8 +647,6 @@ class Unicode
 	/**
 	 * Create a new Unicode object from a UTF-16LE encoded string
 	 *
-	 * @todo Make unicode_semantics=On safe
-	 * @todo Check parameter is a string at all
 	 * @param string $string
 	 * @return Unicode
 	 */
@@ -941,16 +939,35 @@ class Unicode
 	/**
 	 * Create a new Unicode object from a UTF-32BE encoded string
 	 *
-	 * @todo Make unicode_semantics=On safe
-	 * @todo Check parameter is a string at all
 	 * @param string $string
 	 * @return Unicode
 	 */
 	public static function from_utf32be($string)
 	{
+		// Check given parameter is a string
+		if (!is_string($string))
+		{
+			trigger_error('Unicode::from_utf32be() expects parameter 1 to be string, ' . get_type($string) . ' given', E_USER_WARNING);
+			return false;
+		}
+		
+		// Add BOM before calling Unicode::from_utf32() if it doesn't already exist
 		if ((version_compare(phpversion(), '6', '<') || is_binary($string)) && substr($string, 0, 4) !== "\x00\x00\xFE\xFF")
 		{
-			$string = "\x00\x00\xFE\xFF" . $string;
+			// Get U+FEFF as a binary string (which is slightly hard with unicode_semantics=off)
+			static $bom;
+			if (!$bom)
+			{
+				if (version_compare(phpversion(), '6', '>=') && unicode_semantics())
+				{
+					$bom = unicode_encode("\uFEFF", 'UTF-32BE');
+				}
+				else
+				{
+					$bom = "\x00\x00\xFE\xFF";
+				}
+			}
+			$string = $bom . $string;
 		}
 		return self::from_utf32($string);
 	}
