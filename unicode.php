@@ -192,7 +192,6 @@ class Unicode
 	/**
 	 * Create a new Unicode object from an array of codepoints
 	 *
-	 * @todo Make unicode_semantics=On safe
 	 * @param array $array
 	 * @return Unicode
 	 */
@@ -203,6 +202,20 @@ class Unicode
 		{
 			trigger_error('Unicode::from_codepoint_array() expects parameter 1 to be array, ' . get_type($string) . ' given', E_USER_WARNING);
 			return false;
+		}
+		
+		// Get U+FFFD as a binary string (which is slightly hard with unicode_semantics=off)
+		static $replacement_character;
+		if (!$replacement_character)
+		{
+			if (version_compare(phpversion(), '6', '>=') && unicode_semantics())
+			{
+				$replacement_character = unicode_encode("\uFFFD", 'UTF-32');
+			}
+			else
+			{
+				$replacement_character = "\x00\x00\xFF\xFD";
+			}
 		}
 		
 		// Create new object
@@ -220,7 +233,7 @@ class Unicode
 			// If the codepoint is an invalid character replace it with a U+FFFD REPLACEMENT CHARACTER
 			if (!self::valid_unicode_codepoint($codepoint))
 			{
-				$unicode->data .= "\x00\x00\xFF\xFD";
+				$unicode->data .= $replacement_character;
 			}
 			// Otherwise, append it to Unicode::$data
 			else
