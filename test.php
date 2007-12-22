@@ -8,6 +8,6 @@ $data = file_get_contents('UTF-8-test.txt');
 //$data = "\xF0\x90\x91\xBE";
 //$data = "\xE0\x81\x81";
 
-$unicode = Unicode::from_utf8($data);
-
-echo $unicode->to_utf8();
+$utf16 = Unicode::from_utf8($data)->to_utf16();
+$utf32 = Unicode::from_utf16($utf16)->to_utf32();
+$utf8 = Unicode::from_utf32($utf32)->to_utf8();

@@ -24,8 +24,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
+ * @todo unpack() returns a 1-based array
  * @package Unicode
- * @version 0.2
+ * @version 0.3-dev
  * @copyright 2007 Geoffrey Sneddon
  * @author Geoffrey Sneddon
  * @license http://www.opensource.org/licenses/mit-license.php The MIT License
@@ -547,7 +548,7 @@ class Unicode
 						$unicode->data .= pack('N', $words[$i]);
 					}
 					// Two word sequence:
-					elseif ($value >= 0xD800 && $words[$i] <= 0xDFFF)
+					elseif ($words[$i] >= 0xD800 && $words[$i] <= 0xDFFF)
 					{
 						$character = ($words[$i] & 0x3FF) << 10;
 						$surrogate = true;
@@ -565,7 +566,7 @@ class Unicode
 					$surrogate = false;
 					
 					// Check that the word is valid, then add it to the character:
-					if ($value >= 0xDC00 && $words[$i] <= 0xDFFF)
+					if ($words[$i] >= 0xDC00 && $words[$i] <= 0xDFFF)
 					{
 						$character |= $words[$i] & 0x3FF;
 						if (self::valid_unicode_codepoint($character))
