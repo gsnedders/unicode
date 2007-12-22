@@ -654,9 +654,31 @@ class Unicode
 	 */
 	public static function from_utf16le($string)
 	{
+		// Check given parameter is a string
+		if (!is_string($string))
+		{
+			trigger_error('Unicode::from_utf16le() expects parameter 1 to be string, ' . get_type($string) . ' given', E_USER_WARNING);
+			return false;
+		}
+		
+		// Add BOM before calling Unicode::from_utf16() if it doesn't already exist
+		
 		if ((version_compare(phpversion(), '6', '<') || is_binary($string)) && substr($string, 0, 2) !== "\xFF\xFE")
 		{
-			$string = "\xFF\xFE" . $string;
+			// Get U+FEFF as a binary string (which is slightly hard with unicode_semantics=off)
+			static $bom;
+			if (!$bom)
+			{
+				if (version_compare(phpversion(), '6', '>=') && unicode_semantics())
+				{
+					$bom = unicode_encode("\uFEFF", 'UTF-16LE');
+				}
+				else
+				{
+					$bom = "\xFF\xFE";
+				}
+			}
+			$string = $bom . $string;
 		}
 		return self::from_utf16($string);
 	}
