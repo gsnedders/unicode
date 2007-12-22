@@ -24,7 +24,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- * @todo Ensure proper PHP6 support (mainly through strings being unicode strings by default)
  * @package Unicode
  * @version 0.2-dev
  * @copyright 2007 Geoffrey Sneddon
@@ -193,6 +192,7 @@ class Unicode
 	/**
 	 * Create a new Unicode object from an array of codepoints
 	 *
+	 * @todo Make unicode_semantics=On safe
 	 * @param array $array
 	 * @return Unicode
 	 */
@@ -598,6 +598,8 @@ class Unicode
 	/**
 	 * Create a new Unicode object from a UTF-16BE encoded string
 	 *
+	 * @todo Make unicode_semantics=On safe
+	 * @todo Check parameter is a string at all
 	 * @param string $string
 	 * @return Unicode
 	 */
@@ -613,6 +615,8 @@ class Unicode
 	/**
 	 * Create a new Unicode object from a UTF-16LE encoded string
 	 *
+	 * @todo Make unicode_semantics=On safe
+	 * @todo Check parameter is a string at all
 	 * @param string $string
 	 * @return Unicode
 	 */
@@ -883,6 +887,8 @@ class Unicode
 	/**
 	 * Create a new Unicode object from a UTF-32BE encoded string
 	 *
+	 * @todo Make unicode_semantics=On safe
+	 * @todo Check parameter is a string at all
 	 * @param string $string
 	 * @return Unicode
 	 */
@@ -898,6 +904,8 @@ class Unicode
 	/**
 	 * Create a new Unicode object from a UTF-32LE encoded string
 	 *
+	 * @todo Make unicode_semantics=On safe
+	 * @todo Check parameter is a string at all
 	 * @param string $string
 	 * @return Unicode
 	 */
