@@ -611,7 +611,6 @@ class Unicode
 	/**
 	 * Create a new Unicode object from a UTF-16BE encoded string
 	 *
-	 * @todo Make unicode_semantics=On safe
 	 * @param string $string
 	 * @return Unicode
 	 */
@@ -627,7 +626,20 @@ class Unicode
 		// Add BOM before calling Unicode::from_utf16() if it doesn't already exist
 		if ((version_compare(phpversion(), '6', '<') || is_binary($string)) && substr($string, 0, 2) !== "\xFE\xFF")
 		{
-			$string = "\xFE\xFF" . $string;
+			// Get U+FEFF as a binary string (which is slightly hard with unicode_semantics=off)
+			static $bom;
+			if (!$bom)
+			{
+				if (version_compare(phpversion(), '6', '>=') && unicode_semantics())
+				{
+					$bom = unicode_encode("\uFEFF", 'UTF-16BE');
+				}
+				else
+				{
+					$bom = "\xFE\xFF";
+				}
+			}
+			$string = $bom . $string;
 		}
 		return self::from_utf16($string);
 	}
