@@ -25,7 +25,7 @@
  * THE SOFTWARE.
  *
  * @package Unicode
- * @version 0.2-dev
+ * @version 0.2
  * @copyright 2007 Geoffrey Sneddon
  * @author Geoffrey Sneddon
  * @license http://www.opensource.org/licenses/mit-license.php The MIT License
