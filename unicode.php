@@ -433,7 +433,6 @@ class Unicode
 	/**
 	 * Convert a unicode codepoint to a UTF-8 character sequence
 	 *
-	 * @todo Rewrite this so we have no bit-shifts
 	 * @param int $codepoint
 	 * @return string
 	 */
