@@ -24,7 +24,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- * @todo unpack() returns a 1-based array
  * @package Unicode
  * @version 0.3-dev
  * @copyright 2007 Geoffrey Sneddon
@@ -267,7 +266,7 @@ class Unicode
 		{
 			$data = $this->data;
 		}
-		return unpack('N*', $data);
+		return array_values(unpack('N*', $data));
 	}
 	
 	/**
@@ -528,12 +527,12 @@ class Unicode
 			// If the string starts with a UTF-16LE BOM, it is UTF-16LE, so decode it as such
 			if (substr($string, 0, 2) === "\xFF\xFE")
 			{
-				$words = unpack('v*', $string);
+				$words = array_values(unpack('v*', $string));
 			}
 			// Otherwise, it is UTF-16BE, so decode it as such
 			else
 			{
-				$words = unpack('n*', $string);
+				$words = array_values(unpack('n*', $string));
 			}
 			
 			// Iterate through each and every word
