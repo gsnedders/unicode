@@ -622,8 +622,8 @@ class Unicode
 			return false;
 		}
 		
-		// Add BOM before calling Unicode::from_utf16() if it doesn't already exist
-		if ((version_compare(phpversion(), '6', '<') || is_binary($string)) && substr($string, 0, 2) !== "\xFE\xFF")
+		// Add BOM before calling Unicode::from_utf16()
+		if ((version_compare(phpversion(), '6', '<') || is_binary($string)))
 		{
 			// Get U+FEFF as a binary string (which is slightly hard with unicode_semantics=off)
 			static $bom;
@@ -658,9 +658,8 @@ class Unicode
 			return false;
 		}
 		
-		// Add BOM before calling Unicode::from_utf16() if it doesn't already exist
-		
-		if ((version_compare(phpversion(), '6', '<') || is_binary($string)) && substr($string, 0, 2) !== "\xFF\xFE")
+		// Add BOM before calling Unicode::from_utf16()
+		if ((version_compare(phpversion(), '6', '<') || is_binary($string)))
 		{
 			// Get U+FEFF as a binary string (which is slightly hard with unicode_semantics=off)
 			static $bom;
@@ -950,8 +949,8 @@ class Unicode
 			return false;
 		}
 		
-		// Add BOM before calling Unicode::from_utf32() if it doesn't already exist
-		if ((version_compare(phpversion(), '6', '<') || is_binary($string)) && substr($string, 0, 4) !== "\x00\x00\xFE\xFF")
+		// Add BOM before calling Unicode::from_utf32()
+		if ((version_compare(phpversion(), '6', '<') || is_binary($string)))
 		{
 			// Get U+FEFF as a binary string (which is slightly hard with unicode_semantics=off)
 			static $bom;
@@ -986,8 +985,8 @@ class Unicode
 			return false;
 		}
 		
-		// Add BOM before calling Unicode::from_utf32() if it doesn't already exist
-		if ((version_compare(phpversion(), '6', '<') || is_binary($string)) && substr($string, 0, 4) !== "\xFF\xFE\x00\x00")
+		// Add BOM before calling Unicode::from_utf32()
+		if ((version_compare(phpversion(), '6', '<') || is_binary($string)))
 		{
 			// Get U+FEFF as a binary string (which is slightly hard with unicode_semantics=off)
 			static $bom;
