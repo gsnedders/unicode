@@ -127,28 +127,14 @@ class Unicode
 	 * @return mixed
 	 */
 	private static function call_unicode_func_array($function, $param_arr)
-	{
-		// Get U+FFFD as a unicode string (which is slightly hard with unicode_semantics=off)
-		static $replacement_character;
-		if (!$replacement_character)
-		{
-			if (unicode_semantics())
-			{
-				$replacement_character = "\uFFFD";
-			}
-			else
-			{
-				$replacement_character = unicode_decode("\x00\x00\xFF\xFD", 'UTF-32BE');
-			}
-		}
-		
+	{		
 		// Save the current unicode enviroment settings
 		$substr_char = unicode_get_subst_char();
 		$from_mode = unicode_get_error_mode(FROM_UNICODE);
 		$to_mode = unicode_get_error_mode(TO_UNICODE);
 		
 		// Set our own unicode enviroment settings
-		unicode_set_subst_char($replacement_character);
+		unicode_set_subst_char("\uFFFD");
 		unicode_set_error_mode(FROM_UNICODE, U_CONV_ERROR_SUBST);
 		unicode_set_error_mode(TO_UNICODE, U_CONV_ERROR_SUBST);
 		
@@ -204,11 +190,11 @@ class Unicode
 			return false;
 		}
 		
-		// Get U+FFFD as a binary string (which is slightly hard with unicode_semantics=off)
+		// Get U+FFFD as a binary string (which is slightly hard on PHP 6)
 		static $replacement_character;
 		if (!$replacement_character)
 		{
-			if (version_compare(phpversion(), '6', '>=') && unicode_semantics())
+			if (version_compare(phpversion(), '6', '>='))
 			{
 				$replacement_character = unicode_encode("\uFFFD", 'UTF-32');
 			}
@@ -445,7 +431,7 @@ class Unicode
 		if (!isset($cache[$codepoint]))
 		{
 			// On PHP6, we can use its own unicode support
-			if (version_compare(phpversion(), '6', '>=') && unicode_semantics())
+			if (version_compare(phpversion(), '6', '>='))
 			{
 				$cache[$codepoint] = unicode_encode(self::call_unicode_func('chr', $codepoint), 'UTF-8');
 			}
@@ -625,11 +611,11 @@ class Unicode
 		// Add BOM before calling Unicode::from_utf16()
 		if ((version_compare(phpversion(), '6', '<') || is_binary($string)))
 		{
-			// Get U+FEFF as a binary string (which is slightly hard with unicode_semantics=off)
+			// Get U+FEFF as a binary string (which is slightly hard on PHP 6)
 			static $bom;
 			if (!$bom)
 			{
-				if (version_compare(phpversion(), '6', '>=') && unicode_semantics())
+				if (version_compare(phpversion(), '6', '>='))
 				{
 					$bom = unicode_encode("\uFEFF", 'UTF-16BE');
 				}
@@ -661,11 +647,11 @@ class Unicode
 		// Add BOM before calling Unicode::from_utf16()
 		if ((version_compare(phpversion(), '6', '<') || is_binary($string)))
 		{
-			// Get U+FEFF as a binary string (which is slightly hard with unicode_semantics=off)
+			// Get U+FEFF as a binary string (which is slightly hard on PHP 6)
 			static $bom;
 			if (!$bom)
 			{
-				if (version_compare(phpversion(), '6', '>=') && unicode_semantics())
+				if (version_compare(phpversion(), '6', '>='))
 				{
 					$bom = unicode_encode("\uFEFF", 'UTF-16LE');
 				}
@@ -686,7 +672,7 @@ class Unicode
 	 */
 	public function to_utf16()
 	{
-		if (version_compare(phpversion(), '6', '>=') && unicode_semantics())
+		if (version_compare(phpversion(), '6', '>='))
 		{
 			return unicode_encode("\uFEFF", 'UTF-16BE') . $this->to_utf16be();
 		}
@@ -784,7 +770,7 @@ class Unicode
 		if (!isset($cache[$codepoint]))
 		{
 			// On PHP6, we can use its own unicode support
-			if (version_compare(phpversion(), '6', '>=') && unicode_semantics())
+			if (version_compare(phpversion(), '6', '>='))
 			{
 				$cache[$codepoint] = unicode_encode(self::call_unicode_func('chr', $codepoint), 'UTF-16BE');
 			}
@@ -823,7 +809,7 @@ class Unicode
 		if (!isset($cache[$codepoint]))
 		{
 			// On PHP6, we can use its own unicode support
-			if (version_compare(phpversion(), '6', '>=') && unicode_semantics())
+			if (version_compare(phpversion(), '6', '>='))
 			{
 				$cache[$codepoint] = unicode_encode(self::call_unicode_func('chr', $codepoint), 'UTF-16LE');
 			}
@@ -952,11 +938,11 @@ class Unicode
 		// Add BOM before calling Unicode::from_utf32()
 		if ((version_compare(phpversion(), '6', '<') || is_binary($string)))
 		{
-			// Get U+FEFF as a binary string (which is slightly hard with unicode_semantics=off)
+			// Get U+FEFF as a binary string (which is slightly hard on PHP 6)
 			static $bom;
 			if (!$bom)
 			{
-				if (version_compare(phpversion(), '6', '>=') && unicode_semantics())
+				if (version_compare(phpversion(), '6', '>='))
 				{
 					$bom = unicode_encode("\uFEFF", 'UTF-32BE');
 				}
@@ -988,11 +974,11 @@ class Unicode
 		// Add BOM before calling Unicode::from_utf32()
 		if ((version_compare(phpversion(), '6', '<') || is_binary($string)))
 		{
-			// Get U+FEFF as a binary string (which is slightly hard with unicode_semantics=off)
+			// Get U+FEFF as a binary string (which is slightly hard on PHP 6)
 			static $bom;
 			if (!$bom)
 			{
-				if (version_compare(phpversion(), '6', '>=') && unicode_semantics())
+				if (version_compare(phpversion(), '6', '>='))
 				{
 					$bom = unicode_encode("\uFEFF", 'UTF-32LE');
 				}
@@ -1013,7 +999,7 @@ class Unicode
 	 */
 	public function to_utf32()
 	{
-		if (version_compare(phpversion(), '6', '>=') && unicode_semantics())
+		if (version_compare(phpversion(), '6', '>='))
 		{
 			return unicode_encode("\uFEFF", 'UTF-32BE') . $this->to_utf32be();
 		}
@@ -1088,7 +1074,7 @@ class Unicode
 		{
 			return pack('N', $codepoint);
 		}
-		elseif (version_compare(phpversion(), '6', '>=') && unicode_semantics())
+		elseif (version_compare(phpversion(), '6', '>='))
 		{
 			return unicode_encode("\uFFFD", 'UTF-32BE');
 		}
@@ -1110,7 +1096,7 @@ class Unicode
 		{
 			return pack('V', $codepoint);
 		}
-		elseif (version_compare(phpversion(), '6', '>=') && unicode_semantics())
+		elseif (version_compare(phpversion(), '6', '>='))
 		{
 			return unicode_encode("\uFFFD", 'UTF-32LE');
 		}
